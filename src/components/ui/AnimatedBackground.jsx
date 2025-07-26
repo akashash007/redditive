@@ -1,6 +1,13 @@
 import { motion } from 'framer-motion';
+import { useState, useEffect } from 'react';
 
 const AnimatedBackground = ({ children, variant = 'default' }) => {
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
   const variants = {
     default: {
       background: 'linear-gradient(-45deg, #0f172a, #1e293b, #334155, #475569)',
@@ -30,7 +37,7 @@ const AnimatedBackground = ({ children, variant = 'default' }) => {
       
       {/* Floating shapes */}
       <div className="absolute inset-0 overflow-hidden">
-        {[...Array(6)].map((_, i) => (
+        {isClient && [...Array(6)].map((_, i) => (
           <motion.div
             key={i}
             className="absolute rounded-full opacity-10"
