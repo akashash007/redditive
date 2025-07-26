@@ -24,6 +24,9 @@ export default function Home() {
             router.push(ROUTES.DASHBOARD);
         } else {
             router.push(ROUTES.LOGIN);
+        }
+    }
+    )
     // Show loading state while redirecting
 
     return (
