@@ -1,100 +1,40 @@
-// import { signIn, signOut, useSession } from "next-auth/react";
-// import { useEffect, useState } from "react";
-// import axios from "axios";
-// import { getRedditData } from "@/utils/redditApi";
-
-// export default function Home() {
-//     const { data: session } = useSession();
-//     const [profile, setProfile] = useState(null);
-
-//     useEffect(() => {
-//         // If URL ends in #_, remove it
-//         if (window.location.hash === "#_") {
-//             window.history.replaceState(null, null, window.location.pathname);
-//         }
-//     }, []);
-
-
-//     useEffect(() => {
-//         const fetchProfile = async () => {
-//             if (!session?.accessToken || !session?.user?.name) return;
-//             try {
-//                 const data = await getRedditData("/api/v1/me", session.accessToken, session.user.name);
-//                 setProfile(data);
-//             } catch (err) {
-//                 console.error("Failed to fetch profile");
-//             }
-//         };
-
-//         fetchProfile();
-//     }, [session]);
-
-//     return (
-//         <main style={{ padding: "2rem" }}>
-//             {!session ? (
-//                 <>
-//                     <h2>Please log in</h2>
-//                     <button onClick={() => signIn("reddit")}>Login with Reddit</button>
-//                 </>
-//             ) : (
-//                 <>
-//                     <h2>Welcome, {session.user.name}</h2>
-//                     {profile && (
-//                         <pre>{JSON.stringify(profile, null, 2)}</pre>
-//                     )}
-//                     <button onClick={() => signOut()}>Logout</button>
-//                 </>
-//             )}
-//         </main>
-//     );
-// }
-
-import { signOut, useSession } from "next-auth/react";
-import { useEffect, useState } from "react";
+import { useSession } from "next-auth/react";
+import { useEffect } from "react";
 import { useRouter } from "next/router";
-import { getRedditData } from "@/services/redditApi";
+import { motion } from 'framer-motion';
+import AnimatedBackground from '@/components/ui/AnimatedBackground';
 import ROUTES from "@/config/routeConfig";
 
-export default function Dashboard() {
+export default function Home() {
     const { data: session, status } = useSession();
-    const [profile, setProfile] = useState(null);
     const router = useRouter();
 
+    // Clean up URL hash issue
     useEffect(() => {
-        if (status === "unauthenticated") {
-            router.push(ROUTES.LOGIN);
+        if (window.location.hash && window.location.hash.startsWith("#_")) {
+            history.replaceState(null, "", window.location.pathname + window.location.search);
         }
-    }, [status, router]);
+    }, []);
 
+    // Redirect based on authentication status
     useEffect(() => {
-        const fetchProfile = async () => {
-            if (!session?.accessToken || !session?.user?.name) return;
-            try {
-                const data = await getRedditData("/api/v1/me", session.accessToken, session.user.name);
-                setProfile(data);
-            } catch (err) {
-                console.error("Failed to fetch profile", err);
-            }
-        };
-
+        if (status === "loading") return; // Wait for session to load
+        
         if (status === "authenticated") {
-            fetchProfile();
-        }
-    }, [session, status]);
-
-    if (status === "loading") {
-        return <p>Loading...</p>;
-    }
-
-    if (!session) {
-        return null; // Or a fallback UI
-    }
+            router.push(ROUTES.DASHBOARD);
+        } else {
+            router.push(ROUTES.LOGIN);
+    // Show loading state while redirecting
 
     return (
-        <main style={{ padding: "2rem" }}>
-            <h2>Welcome, {session.user.name}</h2>
-            {profile && <pre>{JSON.stringify(profile, null, 2)}</pre>}
-            <button onClick={() => signOut()}>Logout</button>
-        </main>
+        <AnimatedBackground>
+            <div className="min-h-screen flex items-center justify-center">
+                <motion.div
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
+                    className="w-12 h-12 border-4 border-purple-500 border-t-transparent rounded-full"
+                />
+            </div>
+        </AnimatedBackground>
     );
 }
