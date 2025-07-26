@@ -48,7 +48,7 @@ export default function Dashboard() {
         <main style={{ padding: "2rem" }}>
             <h2>Welcome, {session?.user?.name}</h2>
             {profile && <pre>{JSON.stringify(profile, null, 2)}</pre>}
-            <button onClick={() => signOut()}>Logout</button>
+            <button onClick={() => signOut({ callbackUrl: ROUTES.HOME })}>Logout</button>
         </main>
     );
 }

@@ -1,100 +1,33 @@
-// import { signIn, signOut, useSession } from "next-auth/react";
-// import { useEffect, useState } from "react";
-// import axios from "axios";
-// import { getRedditData } from "@/utils/redditApi";
-
-// export default function Home() {
-//     const { data: session } = useSession();
-//     const [profile, setProfile] = useState(null);
-
-//     useEffect(() => {
-//         // If URL ends in #_, remove it
-//         if (window.location.hash === "#_") {
-//             window.history.replaceState(null, null, window.location.pathname);
-//         }
-//     }, []);
-
-
-//     useEffect(() => {
-//         const fetchProfile = async () => {
-//             if (!session?.accessToken || !session?.user?.name) return;
-//             try {
-//                 const data = await getRedditData("/api/v1/me", session.accessToken, session.user.name);
-//                 setProfile(data);
-//             } catch (err) {
-//                 console.error("Failed to fetch profile");
-//             }
-//         };
-
-//         fetchProfile();
-//     }, [session]);
-
-//     return (
-//         <main style={{ padding: "2rem" }}>
-//             {!session ? (
-//                 <>
-//                     <h2>Please log in</h2>
-//                     <button onClick={() => signIn("reddit")}>Login with Reddit</button>
-//                 </>
-//             ) : (
-//                 <>
-//                     <h2>Welcome, {session.user.name}</h2>
-//                     {profile && (
-//                         <pre>{JSON.stringify(profile, null, 2)}</pre>
-//                     )}
-//                     <button onClick={() => signOut()}>Logout</button>
-//                 </>
-//             )}
-//         </main>
-//     );
-// }
-
-import { signOut, useSession } from "next-auth/react";
-import { useEffect, useState } from "react";
+// pages/index.js
+import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
-import { getRedditData } from "@/services/redditApi";
+import { useEffect } from "react";
 import ROUTES from "@/config/routeConfig";
 
-export default function Dashboard() {
+export default function Index() {
     const { data: session, status } = useSession();
-    const [profile, setProfile] = useState(null);
     const router = useRouter();
 
     useEffect(() => {
-        if (status === "unauthenticated") {
-            router.push(ROUTES.LOGIN);
+        if (status === "authenticated") {
+            // If already logged in, go to dashboard
+            router.push(ROUTES.DASHBOARD);
         }
     }, [status, router]);
 
-    useEffect(() => {
-        const fetchProfile = async () => {
-            if (!session?.accessToken || !session?.user?.name) return;
-            try {
-                const data = await getRedditData("/api/v1/me", session.accessToken, session.user.name);
-                setProfile(data);
-            } catch (err) {
-                console.error("Failed to fetch profile", err);
-            }
-        };
-
-        if (status === "authenticated") {
-            fetchProfile();
-        }
-    }, [session, status]);
-
-    if (status === "loading") {
-        return <p>Loading...</p>;
-    }
-
-    if (!session) {
-        return null; // Or a fallback UI
-    }
+    const goToLogin = () => {
+        router.push(ROUTES.LOGIN);
+    };
 
     return (
         <main style={{ padding: "2rem" }}>
-            <h2>Welcome, {session.user.name}</h2>
-            {profile && <pre>{JSON.stringify(profile, null, 2)}</pre>}
-            <button onClick={() => signOut()}>Logout</button>
+            <h2>Welcome to Redditive!</h2>
+            <p>Explore and visualize your Reddit profile in fun ways.</p>
+            {status === "loading" ? (
+                <p>Loading...</p>
+            ) : (
+                <button onClick={goToLogin}>Login to Get Started</button>
+            )}
         </main>
     );
 }
