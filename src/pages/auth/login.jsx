@@ -2,8 +2,9 @@ import { useEffect, useState } from "react";
 import { signIn } from "next-auth/react";
 import { motion } from "framer-motion";
 import ROUTES from "@/config/routeConfig";
-import { Zap } from "lucide-react"; // or replace with a suitable logo/icon
+// import { Zap } from "lucide-react"; // or replace with a suitable logo/icon
 import Image from "next/image";
+import { Zap } from "lucide-react";
 
 export default function Login() {
 
