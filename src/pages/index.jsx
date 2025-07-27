@@ -21,7 +21,7 @@ export default function Index() {
 
     return (
         <main style={{ padding: "2rem" }}>
-            <h2>Welcome to Redditive!</h2>
+            <h2 >Welcome to Redditive!</h2>
             <p>Explore and visualize your Reddit profile in fun ways.</p>
             {status === "loading" ? (
                 <p>Loading...</p>
