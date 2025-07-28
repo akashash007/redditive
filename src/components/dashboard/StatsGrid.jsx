@@ -1,51 +1,52 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Trophy, MessageCircle, Link, Mail, Calendar, Coins } from 'lucide-react';
+import { Trophy, MessageCircle, Link, Mail, Calendar, Coins, Settings } from 'lucide-react';
 
 const StatsGrid = ({ userData }) => {
   if (!userData) return null;
+
   const stats = [
     {
       label: 'Total Karma',
       value: userData.total_karma.toLocaleString(),
       icon: Trophy,
       color: 'from-purple-500 to-pink-500',
-      textColor: 'text-purple-400',
+      textColor: 'text-purple-300',
     },
     {
       label: 'Comment Karma',
       value: userData.comment_karma.toLocaleString(),
       icon: MessageCircle,
       color: 'from-blue-500 to-cyan-500',
-      textColor: 'text-blue-400',
+      textColor: 'text-blue-300',
     },
     {
       label: 'Link Karma',
       value: userData.link_karma.toLocaleString(),
       icon: Link,
       color: 'from-green-500 to-emerald-500',
-      textColor: 'text-green-400',
+      textColor: 'text-green-300',
     },
     {
       label: 'Messages',
       value: userData.inbox_count,
       icon: Mail,
       color: 'from-orange-500 to-red-500',
-      textColor: 'text-orange-400',
+      textColor: 'text-orange-300',
     },
     {
       label: 'Reddit Coins',
       value: userData.coins || 0,
       icon: Coins,
-      color: 'from-yellow-500 to-orange-500',
-      textColor: 'text-yellow-400',
+      color: 'from-yellow-400 to-yellow-600',
+      textColor: 'text-yellow-300',
     },
     {
       label: 'Account Age',
-      value: `${Math.floor((Date.now() - userData.created * 1000) / (1000 * 60 * 60 * 24 * 365))} years`,
+      value: `${Math.floor((Date.now() - userData.created * 1000) / (1000 * 60 * 60 * 24 * 365))} Y`,
       icon: Calendar,
-      color: 'from-indigo-500 to-purple-500',
-      textColor: 'text-indigo-400',
+      color: 'from-indigo-500 to-purple-600',
+      textColor: 'text-indigo-300',
     },
   ];
 
@@ -78,16 +79,21 @@ const StatsGrid = ({ userData }) => {
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ type: "spring", stiffness: 300, damping: 30 }}
-      className="bg-gray-800/80 backdrop-blur-xl border border-gray-700/50 rounded-2xl p-6 shadow-2xl"
+      className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-6 shadow-xl"
     >
-      <motion.h3
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.1 }}
-        className="text-xl font-bold text-white mb-6"
-      >
-        Quick Stats
-      </motion.h3>
+
+      <div className="flex items-center justify-between mb-8">
+        <div>
+          <h3 className="text-2xl font-bold text-white mb-2">Quick Stats</h3>
+        </div>
+        <motion.div
+          // whileHover={{ scale: 1.05, rotate: 90 }}
+          className="bg-gradient-to-r from-blue-500 to-purple-500 p-3 rounded-xl"
+        >
+          <Trophy className="w-6 h-6 text-white" />
+        </motion.div>
+      </div>
+
 
       <motion.div
         variants={containerVariants}
@@ -102,18 +108,22 @@ const StatsGrid = ({ userData }) => {
               key={stat.label}
               variants={itemVariants}
               whileHover={{
-                scale: 1.05,
-                y: -5,
-                transition: { type: "spring", stiffness: 400 }
+                scale: 1.03,
+                y: -4,
+                transition: {
+                  type: "tween",
+                  duration: 0.1,
+                  ease: "easeOut"
+                }
               }}
-              className="bg-gray-900/50 border border-gray-700/30 rounded-xl p-4 relative overflow-hidden cursor-pointer group"
+              className="relative p-4 rounded-2xl bg-white/5 backdrop-blur-md border border-white/10 shadow-md overflow-hidden group transition-all"
             >
-              {/* Background Gradient */}
-              <div className={`absolute inset-0 bg-gradient-to-br ${stat.color} opacity-0 group-hover:opacity-10 transition-opacity duration-300`} />
+              {/* Subtle Hover Glow */}
+              <div className={`absolute inset-0 bg-gradient-to-br ${stat.color} opacity-0 group-hover:opacity-20 transition-opacity duration-300 pointer-events-none rounded-2xl`} />
 
               <div className="relative z-10">
                 <div className="flex items-center justify-between mb-3">
-                  <div className={`w-10 h-10 bg-gradient-to-r ${stat.color} rounded-lg flex items-center justify-center`}>
+                  <div className={`w-11 h-11 bg-gradient-to-r ${stat.color} rounded-xl flex items-center justify-center shadow-md`}>
                     <Icon className="w-5 h-5 text-white" />
                   </div>
                   <motion.div
@@ -125,7 +135,7 @@ const StatsGrid = ({ userData }) => {
                     {stat.value}
                   </motion.div>
                 </div>
-                <p className="text-gray-400 text-sm font-medium">{stat.label}</p>
+                <p className="text-gray-300 text-sm font-medium">{stat.label}</p>
               </div>
             </motion.div>
           );

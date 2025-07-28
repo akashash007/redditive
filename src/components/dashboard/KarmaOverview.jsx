@@ -1,20 +1,23 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
+import {
+  LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer,
+  BarChart, Bar, PieChart, Pie, Cell
+} from 'recharts';
 import { TrendingUp, Award, MessageSquare } from 'lucide-react';
 
 const KarmaOverview = ({ userData }) => {
-
   if (!userData) return null;
 
-  // Mock data for demonstration
   const karmaData = [
-    { month: 'Jan', total: 2500, link: 150, comment: 2350 },
-    { month: 'Feb', total: 2800, link: 200, comment: 2600 },
-    { month: 'Mar', total: 3200, link: 280, comment: 2920 },
-    { month: 'Apr', total: 3600, link: 350, comment: 3250 },
-    { month: 'May', total: 3916, link: 392, comment: 3524 },
+    {
+      month: "Current",
+      total: userData.total_karma,
+      link: userData.link_karma,
+      comment: userData.comment_karma,
+    },
   ];
+
 
   const karmaDistribution = [
     { name: 'Comment Karma', value: userData.comment_karma, color: '#8B5CF6' },
@@ -26,7 +29,7 @@ const KarmaOverview = ({ userData }) => {
   const CustomTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
       return (
-        <div className="bg-gray-800 border border-gray-700 rounded-lg p-3 shadow-xl">
+        <div className="bg-gray-800/70 backdrop-blur-md border border-gray-600/40 rounded-lg p-3 shadow-xl">
           <p className="text-white font-semibold">{label}</p>
           {payload.map((entry) => (
             <p key={entry.dataKey} style={{ color: entry.color }}>
@@ -44,28 +47,32 @@ const KarmaOverview = ({ userData }) => {
       initial={{ opacity: 0, y: 30 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ type: "spring", stiffness: 300, damping: 30 }}
-      className="bg-gray-800/80 backdrop-blur-xl border border-gray-700/50 rounded-2xl p-8 shadow-2xl"
+      className="w-full bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-8 shadow-2xl"
     >
       <div className="flex items-center justify-between mb-8">
         <div>
           <h3 className="text-2xl font-bold text-white mb-2">Karma Overview</h3>
-          <p className="text-gray-400">Track your Reddit engagement and growth</p>
+          <p className="text-gray-300">Track your Reddit engagement and growth</p>
         </div>
         <motion.div
-          whileHover={{ scale: 1.05 }}
-          className="bg-gradient-to-r from-purple-500 to-blue-500 p-3 rounded-xl"
+          // whileHover={{
+          //   scale: 1.05,
+          //   transition: { type: "tween", duration: 0.15, ease: "easeOut" }
+          // }}
+          className="bg-gradient-to-r from-purple-500 to-blue-500 p-3 rounded-xl shadow-md"
         >
           <TrendingUp className="w-6 h-6 text-white" />
         </motion.div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-1 gap-8">
         {/* Karma Growth Chart */}
-        <motion.div
+        {/* <motion.div
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.2 }}
-          className="bg-gray-900/50 rounded-xl p-6"
+          // className="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl p-6 shadow-lg"
+          className="bg-purple-900/30 backdrop-blur-md border border-white/10 rounded-2xl p-6 shadow-sm"
         >
           <h4 className="text-lg font-semibold text-white mb-4 flex items-center">
             <Award className="w-5 h-5 mr-2 text-purple-400" />
@@ -75,8 +82,8 @@ const KarmaOverview = ({ userData }) => {
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={karmaData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fill: '#9CA3AF' }} />
-                <YAxis axisLine={false} tickLine={false} tick={{ fill: '#9CA3AF' }} />
+                <XAxis dataKey="month" tick={{ fill: '#9CA3AF' }} />
+                <YAxis tick={{ fill: '#9CA3AF' }} />
                 <Line
                   type="monotone"
                   dataKey="total"
@@ -94,14 +101,14 @@ const KarmaOverview = ({ userData }) => {
               </LineChart>
             </ResponsiveContainer>
           </div>
-        </motion.div>
+        </motion.div> */}
 
         {/* Karma Distribution */}
         <motion.div
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.3 }}
-          className="bg-gray-900/50 rounded-xl p-6"
+          className="bg-purple-900/30 backdrop-blur-md border border-white/10 rounded-2xl p-6 shadow-sm"
         >
           <h4 className="text-lg font-semibold text-white mb-4 flex items-center">
             <MessageSquare className="w-5 h-5 mr-2 text-blue-400" />
@@ -135,37 +142,36 @@ const KarmaOverview = ({ userData }) => {
                 transition={{ delay: 0.4 + index * 0.1 }}
                 className="flex items-center space-x-2"
               >
-                <div
-                  className="w-3 h-3 rounded-full"
-                  style={{ backgroundColor: item.color }}
-                />
-                <span className="text-sm text-gray-300">{item.name}: {item.value}</span>
+                <div className="w-3 h-3 rounded-full" style={{ backgroundColor: item.color }} />
+                <span className="text-sm text-gray-300">
+                  {item.name}: {item.value}
+                </span>
               </motion.div>
             ))}
           </div>
         </motion.div>
       </div>
 
-      {/* Karma Breakdown Bar Chart */}
-      <motion.div
+      {/* Monthly Karma Breakdown */}
+      {/* <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.4 }}
-        className="mt-8 bg-gray-900/50 rounded-xl p-6"
+        className="bg-purple-900/30 backdrop-blur-md border border-white/10 rounded-2xl p-6 shadow-sm mt-8"
       >
         <h4 className="text-lg font-semibold text-white mb-4">Monthly Karma Breakdown</h4>
         <div className="h-64">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={karmaData}>
               <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-              <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fill: '#9CA3AF' }} />
-              <YAxis axisLine={false} tickLine={false} tick={{ fill: '#9CA3AF' }} />
+              <XAxis dataKey="month" tick={{ fill: '#9CA3AF' }} />
+              <YAxis tick={{ fill: '#9CA3AF' }} />
               <Bar dataKey="comment" stackId="a" fill="#8B5CF6" radius={[0, 0, 4, 4]} />
               <Bar dataKey="link" stackId="a" fill="#06B6D4" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>
-      </motion.div>
+      </motion.div> */}
     </motion.div>
   );
 };

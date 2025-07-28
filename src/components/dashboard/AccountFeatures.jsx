@@ -94,7 +94,7 @@ const AccountFeatures = ({ userData }) => {
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ type: "spring", stiffness: 300, damping: 30 }}
-      className="bg-gray-800/80 backdrop-blur-xl border border-gray-700/50 rounded-2xl p-8 shadow-2xl"
+      className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-6 shadow-xl"
     >
       <div className="flex items-center justify-between mb-6">
         <div>
@@ -102,7 +102,7 @@ const AccountFeatures = ({ userData }) => {
           <p className="text-gray-400">Your Reddit account capabilities and preferences</p>
         </div>
         <motion.div
-          whileHover={{ scale: 1.05, rotate: 10 }}
+          // whileHover={{ scale: 1.05, rotate: 10 }}
           className="bg-gradient-to-r from-green-500 to-blue-500 p-3 rounded-xl"
         >
           <Shield className="w-6 h-6 text-white" />
@@ -124,7 +124,11 @@ const AccountFeatures = ({ userData }) => {
               whileHover={{
                 scale: 1.05,
                 y: -5,
-                transition: { type: "spring", stiffness: 400 }
+                transition: {
+                  type: "tween",
+                  duration: 0.1,
+                  ease: "easeOut"
+                }
               }}
               className={`${feature.bgColor} border border-gray-700/30 rounded-xl p-4 text-center transition-all duration-300 cursor-pointer`}
             >
@@ -144,8 +148,8 @@ const AccountFeatures = ({ userData }) => {
                 animate={{ scale: 1 }}
                 transition={{ delay: index * 0.1 + 0.5 }}
                 className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${feature.value
-                    ? 'bg-green-500/20 text-green-400'
-                    : 'bg-gray-500/20 text-gray-400'
+                  ? 'bg-green-500/20 text-green-400'
+                  : 'bg-gray-500/20 text-gray-400'
                   }`}
               >
                 {feature.value ? 'Enabled' : 'Disabled'}
