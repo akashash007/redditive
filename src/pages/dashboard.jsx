@@ -2,7 +2,7 @@
 import { signOut, useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
-import { getRedditData } from "@/services/redditApi";
+import { fetchFromEndpoint, getRedditData } from "@/services/redditApi";
 import ROUTES from "@/config/routeConfig";
 
 import { motion, AnimatePresence } from 'framer-motion';
@@ -61,7 +61,8 @@ export default function Dashboard() {
         const fetchProfile = async () => {
             if (!session?.accessToken || !session?.user?.name) return;
             try {
-                const data = await getRedditData("/api/v1/me", session.accessToken, session.user.name);
+                // const data = await getRedditData("/api/v1/me", session.accessToken, session.user.name);
+                const data = await fetchFromEndpoint("getUserProfile", session.accessToken, session.user.name);
                 setProfile(data);
                 // setuserData(data)
             } catch (err) {
@@ -145,7 +146,8 @@ export default function Dashboard() {
                 <main className="w-full mx-auto px-6 py-8 mt-20">
                     <AnimatePresence mode="wait">
                         {activeTab === 'overview' && (
-                            <Overview profile={profile} status={status} session={session} />
+                            <Overview profile={profile} />
+                            // <Overview profile={profile} status={status} session={session} />
                         )}
 
                         {activeTab === 'analytics' && (

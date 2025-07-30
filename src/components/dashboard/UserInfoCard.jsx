@@ -2,10 +2,12 @@
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Calendar, Mail, Shield, Star } from "lucide-react";
-import { getRedditData } from "@/services/redditApi";
+import { fetchFromEndpoint, getRedditData } from "@/services/redditApi";
+import { useSession } from "next-auth/react";
 
-const UserInfoCard = ({ userData, status, session }) => {
+const UserInfoCard = ({ userData }) => {
   if (!userData || !userData.created) return null;
+  const { data: session, status } = useSession();
   const [trophies, setTrophies] = useState([]);
 
   const createdDate = new Date(userData.created * 1000).toLocaleDateString();
@@ -16,7 +18,8 @@ const UserInfoCard = ({ userData, status, session }) => {
       if (!session?.accessToken || !session?.user?.name) return;
 
       try {
-        const res = await getRedditData("/api/v1/me/trophies", session.accessToken, session.user.name);
+        // const res = await getRedditData("/api/v1/me/trophies", session.accessToken, session.user.name);
+        const res = await fetchFromEndpoint("getTrophies", session.accessToken, session.user.name);
         const flatTrophies = res?.data?.trophies?.map(t => t.data) || [];
         setTrophies(flatTrophies);
       } catch (err) {

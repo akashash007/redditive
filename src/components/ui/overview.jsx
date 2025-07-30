@@ -5,8 +5,10 @@ import KarmaOverview from '@/components/dashboard/KarmaOverview';
 import AccountFeatures from '@/components/dashboard/AccountFeatures';
 import SubredditPanel from '@/components/dashboard/SubredditPanel';
 import StatsGrid from '@/components/dashboard/StatsGrid';
+import { useSession } from 'next-auth/react';
 
-const Overview = ({ profile, status, session }) => {
+const Overview = ({ profile }) => {
+    const { data: session, status } = useSession();
 
     const containerVariants = {
         hidden: { opacity: 0 },
@@ -44,7 +46,8 @@ const Overview = ({ profile, status, session }) => {
             {/* User Info and Quick Stats */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <motion.div variants={itemVariants} className="lg:col-span-2">
-                    <UserInfoCard userData={profile} status={status} session={session} />
+                    {/* <UserInfoCard userData={profile} status={status} session={session} /> */}
+                    <UserInfoCard userData={profile} />
                 </motion.div>
                 <motion.div variants={itemVariants}>
                     <StatsGrid userData={profile} />
@@ -58,9 +61,9 @@ const Overview = ({ profile, status, session }) => {
                 <motion.div variants={itemVariants}>
                     <AccountFeatures userData={profile} />
                 </motion.div>
-                <motion.div variants={itemVariants}>
+                {/* <motion.div variants={itemVariants}>
                     <SubredditPanel userData={profile} />
-                </motion.div>
+                </motion.div> */}
             </div>
         </motion.div>
     )

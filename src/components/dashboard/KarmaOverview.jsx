@@ -1,13 +1,17 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import axios from "axios";
 import { motion } from 'framer-motion';
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer,
   BarChart, Bar, PieChart, Pie, Cell
 } from 'recharts';
 import { TrendingUp, Award, MessageSquare } from 'lucide-react';
+import { useSession } from 'next-auth/react';
+import { fetchCommentsForPost, fetchFromEndpoint, getRedditData } from '@/services/redditApi';
 
 const KarmaOverview = ({ userData }) => {
   if (!userData) return null;
+  const { data: session, status } = useSession();
 
   const karmaData = [
     {
@@ -41,6 +45,28 @@ const KarmaOverview = ({ userData }) => {
     }
     return null;
   };
+
+  // useEffect(() => {
+  //   if (status === "authenticated") {
+  //     console.log("✅ Access Token:", session?.accessToken);
+  //   }
+  // }, [session, status]);
+
+  useEffect(() => {
+    const fetchUserComments = async () => {
+      if (!session?.accessToken || !session?.user?.name) return;
+
+      try {
+        const res = await fetchFromEndpoint("getUserComments", session.accessToken, { username: session.user.name });
+      } catch (err) {
+        console.error("Failed to fetch trophies", err);
+      }
+    };
+
+    if (status === "authenticated") {
+      fetchUserComments();
+    }
+  }, [session, status]);
 
   return (
     <motion.div
