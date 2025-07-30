@@ -18,10 +18,6 @@ export default function Index() {
         }
     }, [status, router]);
 
-    const goToLogin = () => {
-        router.push(ROUTES.LOGIN);
-    };
-
     const onGetStarted = () => {
         router.push(ROUTES.LOGIN);
     };

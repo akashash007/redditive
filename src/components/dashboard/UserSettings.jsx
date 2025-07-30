@@ -53,9 +53,14 @@ const UserSettings = ({ userData, setActiveTab }) => {
 
   return (
     <motion.div
-      initial={{ opacity: 0, scale: 0.95 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ type: "spring", stiffness: 300, damping: 30 }}
+      // initial={{ opacity: 0, scale: 0.95 }}
+      // animate={{ opacity: 1, scale: 1 }}
+      // transition={{ type: "spring", stiffness: 300, damping: 30 }}
+      key="settings"
+      initial={{ opacity: 0, x: 100 }}
+      animate={{ opacity: 1, x: 0 }}
+      exit={{ opacity: 0, x: -100 }}
+      transition={{ duration: 0.5 }}
       className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl px-8 py-10 shadow-xl w-xl"
     >
       {/* Header */}

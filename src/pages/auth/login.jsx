@@ -2,81 +2,17 @@ import { useEffect, useState } from "react";
 import { signIn } from "next-auth/react";
 import { motion } from "framer-motion";
 import ROUTES from "@/config/routeConfig";
-// import { Zap } from "lucide-react"; // or replace with a suitable logo/icon
 import Image from "next/image";
 import { Zap } from "lucide-react";
+import FloatingBackground from "@/components/ui/FloatingBackground";
 
 export default function Login() {
 
-    const [floatingParticles, setFloatingParticles] = useState([]);
-
-    useEffect(() => {
-        const generated = Array.from({ length: 15 }, (_, i) => ({
-            id: i,
-            size: `${Math.floor(Math.random() * 6) + 2}px`,
-            x: `${Math.random() * 100}%`,
-            y: `${Math.random() * 100}%`,
-            color: [
-                "bg-pink-400",
-                "bg-purple-400",
-                "bg-blue-400",
-                "bg-yellow-300",
-                "bg-green-400",
-                "bg-indigo-400"
-            ][Math.floor(Math.random() * 6)],
-            shape: ["rounded-full", "rounded-md", "triangle"][Math.floor(Math.random() * 3)],
-            delay: Math.random() * 5,
-        }));
-
-        setFloatingParticles(generated);
-    }, []);
-
     return (
         <main className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900/30 to-indigo-900/40 flex items-center justify-center relative overflow-hidden">
-            {/* Background blobs */}
-            <motion.div
-                animate={{ x: [0, 80, 0], y: [0, -80, 0], rotate: [0, 180, 360] }}
-                transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
-                className="absolute top-1/4 left-1/4 w-96 h-96 bg-gradient-to-r from-pink-400/20 to-purple-500/20 rounded-full blur-3xl"
-            />
-            <motion.div
-                animate={{ x: [0, -100, 0], y: [0, 100, 0], rotate: [360, 180, 0] }}
-                transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
-                className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] bg-gradient-to-r from-indigo-400/20 to-purple-600/20 rounded-full blur-3xl"
-            />
-            {floatingParticles.map(p => (
-                <motion.div
-                    key={p.id}
-                    initial={{
-                        x: 0,
-                        y: 0,
-                        opacity: 0.2,
-                    }}
-                    animate={{
-                        x: [0, Math.random() * 100 - 50, 0],
-                        y: [0, Math.random() * 100 - 50, 0],
-                        rotate: [0, Math.random() * 360, 0],
-                        opacity: [0.2, 0.5, 0.2],
-                    }}
-                    transition={{
-                        duration: 10 + Math.random() * 5,
-                        repeat: Infinity,
-                        ease: "easeInOut",
-                        delay: p.delay,
-                    }}
-                    className={`absolute ${p.color} ${p.shape !== "triangle" ? p.shape : ""}`}
-                    style={{
-                        top: p.y,
-                        left: p.x,
-                        width: p.shape === "triangle" ? "0px" : p.size,
-                        height: p.shape === "triangle" ? "0px" : p.size,
-                        opacity: 0.5,
-                        zIndex: 0,
-                    }}
-                >
-                    {p.shape === "triangle" && <div className="triangle" />}
-                </motion.div>
-            ))}
+
+            <FloatingBackground particleCount={25} />
+
             {/* Login card */}
             <motion.div
                 initial={{ opacity: 0, y: 50 }}

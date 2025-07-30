@@ -34,3 +34,8 @@ body {
   /* default pink color */
   background: none;
 }
+
+
+button {
+  cursor: pointer;
+}
