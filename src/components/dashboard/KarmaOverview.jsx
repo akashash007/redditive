@@ -11,6 +11,7 @@ import { useSession } from 'next-auth/react';
 import { fetchCommentsForPost, fetchFromEndpoint, getRedditData } from '@/services/redditApi';
 import { toast } from 'sonner';
 import { useNotify } from '@/utils/NotificationContext';
+import HeatMap from '@uiw/react-heat-map';
 
 const KarmaOverview = ({ userData }) => {
   if (!userData) return null;
@@ -211,6 +212,24 @@ const KarmaOverview = ({ userData }) => {
     );
   };
 
+  const dateData = comments.map((c) => {
+    const date = new Date(c.data.created_utc * 1000).toISOString().split("T")[0]; // Ensures YYYY-MM-DD
+    return date;
+  });
+
+  const counts = dateData.reduce((acc, date) => {
+    acc[date] = (acc[date] || 0) + 1;
+    return acc;
+  }, {});
+
+  const heatmapDatae = Object.entries(counts).map(([date, count]) => ({
+    date,
+    count,
+  }));
+
+  console.log(heatmapDatae);
+
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 30 }}
@@ -219,8 +238,8 @@ const KarmaOverview = ({ userData }) => {
       className="w-full"
     >
       {/* Karma Distribution */}
-      <div className="grid grid-cols-1 lg:grid-cols-2">
-        <div className="w-xl bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-8 shadow-2xl">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className=" bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-8 shadow-2xl">
           <div className="flex items-center justify-between mb-8">
             <div>
               <h3 className="text-2xl font-bold text-white mb-2">Karma Overview</h3>
@@ -233,6 +252,7 @@ const KarmaOverview = ({ userData }) => {
             </motion.div>
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-1 gap-8">
+
             <motion.div
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
@@ -297,34 +317,40 @@ const KarmaOverview = ({ userData }) => {
             <div className="block">
               <div className="relative">
                 <ThumbsUp className="absolute top-2 right-2 text-green-300/80 w-5 h-5 z-2" />
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.2 }}
-                  className="bg-gradient-to-r from-green-500/20 to-green-400/10 backdrop-blur-xl border border-green-500/30 rounded-2xl p-4 shadow-md hover:scale-[1.02] transition-transform duration-200 min-h-[110px]"
+                <a
+                  href={topComment ? `https://www.reddit.com${topComment.data.permalink}` : "#"}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block"
                 >
-                  {topComment ? (
-                    <>
-                      <h4 className="text-white font-semibold mb-1">Most Upvoted</h4>
-                      <p className="text-green-300 font-bold text-lg">
-                        +{topComment.data.ups || 0} votes
-                      </p>
-                      <p className="text-white/80 text-sm line-clamp-2 mt-1">
-                        {cleanBody(topComment.data.body)}
-                      </p>
-                      <p className="text-xs text-white/50 mt-2">
-                        r/{topComment.data.subreddit}
-                      </p>
-                    </>
-                  ) : (
-                    <div className="animate-pulse space-y-2">
-                      <div className="w-1/3 h-4 bg-white/20 rounded" />
-                      <div className="w-1/2 h-5 bg-white/30 rounded" />
-                      <div className="w-3/4 h-4 bg-white/10 rounded" />
-                      <div className="w-1/4 h-3 bg-white/10 rounded" />
-                    </div>
-                  )}
-                </motion.div>
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.2 }}
+                    className="bg-gradient-to-r from-green-500/20 to-green-400/10 backdrop-blur-xl border border-green-500/30 rounded-2xl p-4 shadow-md hover:scale-[1.02] transition-transform duration-200 min-h-[110px]"
+                  >
+                    <h4 className="text-white font-semibold mb-1">Most Upvoted</h4>
+                    {topComment ? (
+                      <>
+                        <p className="text-green-300 font-bold text-lg">
+                          +{topComment.data.ups || 0} votes
+                        </p>
+                        <p className="text-white/80 text-sm line-clamp-2 mt-1">
+                          {cleanBody(topComment.data.body)}
+                        </p>
+                        <p className="text-xs text-white/50 mt-2">
+                          r/{topComment.data.subreddit}
+                        </p>
+                      </>
+                    ) : (
+                      <div className="space-y-2">
+                        <div className="w-1/3 h-4 bg-white/20 rounded animate-pulse" />
+                        <div className="w-2/3 h-4 bg-white/10 rounded animate-pulse" />
+                        <div className="w-1/4 h-3 bg-white/10 rounded animate-pulse" />
+                      </div>
+                    )}
+                  </motion.div>
+                </a>
               </div>
             </div>
 
@@ -332,40 +358,81 @@ const KarmaOverview = ({ userData }) => {
             <div className="block">
               <div className="relative">
                 <ThumbsDown className="absolute top-2 right-2 text-red-300/80 w-5 h-5 z-2" />
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.3 }}
-                  className="bg-gradient-to-r from-red-500/20 to-red-400/10 backdrop-blur-xl border border-red-500/30 rounded-2xl p-4 shadow-md hover:scale-[1.02] transition-transform duration-200 min-h-[110px]"
+                <a
+                  href={bottomComment ? `https://www.reddit.com${bottomComment.data.permalink}` : "#"}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block"
                 >
-                  {bottomComment ? (
-                    <>
-                      <h4 className="text-white font-semibold mb-1">Most Downvoted</h4>
-                      <p className="text-red-300 font-bold text-lg">
-                        {bottomComment.data.ups || 0} votes
-                      </p>
-                      <p className="text-white/80 text-sm line-clamp-2 mt-1">
-                        {cleanBody(bottomComment.data.body)}
-                      </p>
-                      <p className="text-xs text-white/50 mt-2">
-                        r/{bottomComment.data.subreddit}
-                      </p>
-                    </>
-                  ) : (
-                    <div className="animate-pulse space-y-2">
-                      <div className="w-1/3 h-4 bg-white/20 rounded" />
-                      <div className="w-1/2 h-5 bg-white/30 rounded" />
-                      <div className="w-3/4 h-4 bg-white/10 rounded" />
-                      <div className="w-1/4 h-3 bg-white/10 rounded" />
-                    </div>
-                  )}
-                </motion.div>
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.3 }}
+                    className="bg-gradient-to-r from-red-500/20 to-red-400/10 backdrop-blur-xl border border-red-500/30 rounded-2xl p-4 shadow-md hover:scale-[1.02] transition-transform duration-200 min-h-[110px]"
+                  >
+                    <h4 className="text-white font-semibold mb-1">Most Downvoted</h4>
+                    {bottomComment ? (
+                      <>
+                        <p className="text-red-300 font-bold text-lg">
+                          {bottomComment.data.ups || 0} votes
+                        </p>
+                        <p className="text-white/80 text-sm line-clamp-2 mt-1">
+                          {cleanBody(bottomComment.data.body)}
+                        </p>
+                        <p className="text-xs text-white/50 mt-2">
+                          r/{bottomComment.data.subreddit}
+                        </p>
+                      </>
+                    ) : (
+                      <div className="space-y-2">
+                        <div className="w-1/3 h-4 bg-white/20 rounded animate-pulse" />
+                        <div className="w-2/3 h-4 bg-white/10 rounded animate-pulse" />
+                        <div className="w-1/4 h-3 bg-white/10 rounded animate-pulse" />
+                      </div>
+                    )}
+                  </motion.div>
+                </a>
               </div>
             </div>
+          </div>
 
+
+          <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-8 shadow-2xl mt-8">
+            <div className="flex items-center justify-between mb-8">
+              <div>
+                <h3 className="text-2xl font-bold text-white mb-2">Karma </h3>
+                <p className="text-gray-300">Track your Reddit engagement and growth</p>
+              </div>
+              <motion.div
+                className="bg-gradient-to-r from-purple-500 to-blue-500 p-3 rounded-xl shadow-md"
+              >
+                <TrendingUp className="w-6 h-6 text-white" />
+              </motion.div>
+            </div>
+            <HeatMap
+              value={heatmapDatae}
+              weekLabels={['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']}
+              monthLabels={['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug']}
+              panelColors={{
+                0: '#27272a',
+                1: '#8B5CF6',
+                3: '#7C3AED',
+                5: '#6D28D9',
+                10: '#581C87',
+              }}
+              width={500}
+              // rectSize={20}
+              startDate={heatmapDatae[0]?.date}
+              endDate={heatmapDatae[heatmapDatae.length - 1]?.date}
+              style={{
+                color: 'white',
+              }}
+            />
           </div>
         </div>
       </div>
+
+
       {/* Subreddit Comment Distribution */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -464,6 +531,9 @@ const KarmaOverview = ({ userData }) => {
           </ResponsiveContainer>
         </div>
       </motion.div>
+
+
+
       {/* Karma Growth Chart */}
       <motion.div
         initial={{ opacity: 0, x: -20 }}

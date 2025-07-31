@@ -22,15 +22,20 @@ export default function Login() {
             >
 
                 {/* Logo */}
-                <div className="flex justify-center mb-6">
+                <div className="relative flex justify-center mb-6">
+                    {/* Glowing Aura */}
+                    <div className="absolute top-1/2 left-1/2 mt-5 -translate-x-1/2 -translate-y-1/2 w-[200px] h-[200px] rounded-full z-0 bg-gradient-to-br from-purple-700 via-purple-900 to-indigo-800 blur-2xl opacity-60 animate-pulse" />
+
+                    {/* Logo Image */}
                     <Image
-                        src="/redditive_favicon.png" // Replace with your actual logo path
+                        src="/redditive_favicon.png"
                         alt="Reddit Analyzer Logo"
                         width={120}
                         height={120}
-                        className="rounded-full"
+                        className="rounded-full relative z-10"
                     />
                 </div>
+
 
                 {/* Title */}
                 <motion.h2

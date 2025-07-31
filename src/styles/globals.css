@@ -35,7 +35,23 @@ body {
   background: none;
 }
 
-
 button {
   cursor: pointer;
+}
+
+/* Tooltip override */
+.wui-heat-map rect:hover {
+  stroke: white;
+  stroke-width: 2px;
+  cursor: pointer;
+}
+
+.wui-heat-map .wui-tooltip {
+  background: rgba(0, 0, 0, 0.7) !important;
+  color: #fff !important;
+  font-weight: 500;
+  border-radius: 8px;
+  padding: 4px 8px;
+  font-size: 12px;
+  backdrop-filter: blur(6px);
 }
