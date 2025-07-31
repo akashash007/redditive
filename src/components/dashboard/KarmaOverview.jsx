@@ -8,10 +8,8 @@ import {
 } from 'recharts';
 import { TrendingUp, Award, MessageSquare, ThumbsUp, ThumbsDown } from 'lucide-react';
 import { useSession } from 'next-auth/react';
-import { fetchCommentsForPost, fetchFromEndpoint, getRedditData } from '@/services/redditApi';
-import { toast } from 'sonner';
 import { useNotify } from '@/utils/NotificationContext';
-import HeatMap from '@uiw/react-heat-map';
+import CustomHeatmap from '../charts/CustomHeatmap';
 
 const KarmaOverview = ({ userData }) => {
   if (!userData) return null;
@@ -311,6 +309,7 @@ const KarmaOverview = ({ userData }) => {
             </motion.div>
           </div>
         </div>
+
         <div className="">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Most Upvoted */}
@@ -396,39 +395,6 @@ const KarmaOverview = ({ userData }) => {
             </div>
           </div>
 
-
-          <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-8 shadow-2xl mt-8">
-            <div className="flex items-center justify-between mb-8">
-              <div>
-                <h3 className="text-2xl font-bold text-white mb-2">Karma </h3>
-                <p className="text-gray-300">Track your Reddit engagement and growth</p>
-              </div>
-              <motion.div
-                className="bg-gradient-to-r from-purple-500 to-blue-500 p-3 rounded-xl shadow-md"
-              >
-                <TrendingUp className="w-6 h-6 text-white" />
-              </motion.div>
-            </div>
-            <HeatMap
-              value={heatmapDatae}
-              weekLabels={['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']}
-              monthLabels={['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug']}
-              panelColors={{
-                0: '#27272a',
-                1: '#8B5CF6',
-                3: '#7C3AED',
-                5: '#6D28D9',
-                10: '#581C87',
-              }}
-              width={500}
-              // rectSize={20}
-              startDate={heatmapDatae[0]?.date}
-              endDate={heatmapDatae[heatmapDatae.length - 1]?.date}
-              style={{
-                color: 'white',
-              }}
-            />
-          </div>
         </div>
       </div>
 
@@ -533,33 +499,10 @@ const KarmaOverview = ({ userData }) => {
       </motion.div>
 
 
+      <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-8 shadow-2xl mt-8">
+        <CustomHeatmap data={heatmapDatae} />
+      </div>
 
-      {/* Karma Growth Chart */}
-      <motion.div
-        initial={{ opacity: 0, x: -20 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ delay: 0.2 }}
-        // className="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl p-6 shadow-lg"
-        className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-8 shadow-2xl mt-8"
-      >
-
-
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h3 className="text-2xl font-bold text-white mb-2">title</h3>
-            <p className="text-gray-300">desc</p>
-          </div>
-          <motion.div className="bg-gradient-to-r from-purple-500 to-blue-500 p-3 rounded-xl shadow-md">
-            <Award className="w-6 h-6 text-white" />
-          </motion.div>
-        </div>
-
-        <div className="h-64">
-          {/* add graph here  */}
-        </div>
-
-
-      </motion.div>
     </motion.div >
   );
 };

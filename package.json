@@ -11,6 +11,8 @@
   "dependencies": {
     "@uiw/react-heat-map": "^2.3.3",
     "axios": "^1.11.0",
+    "classnames": "^2.5.1",
+    "date-fns": "^4.1.0",
     "framer-motion": "^12.23.9",
     "lucide-react": "^0.526.0",
     "next": "15.4.4",
