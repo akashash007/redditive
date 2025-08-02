@@ -3,6 +3,7 @@ const ROUTES = {
     LOGIN: "login",
     DASHBOARD: "/dashboard",
     PROFILE: "/profile",
+    SAVED: "/saved",
     SETTINGS: "/settings",
 };
 

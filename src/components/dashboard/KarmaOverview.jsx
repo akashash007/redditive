@@ -10,12 +10,17 @@ import { TrendingUp, Award, MessageSquare, ThumbsUp, ThumbsDown } from 'lucide-r
 import { useSession } from 'next-auth/react';
 import { useNotify } from '@/utils/NotificationContext';
 import CustomHeatmap from '../charts/CustomHeatmap';
+import VotesChart from '../charts/VotesChart';
+import SavedItemsPanel from '../charts/SavedItemsPanel';
 
 const KarmaOverview = ({ userData }) => {
   if (!userData) return null;
   const { data: session, status } = useSession();
   const { notify } = useNotify();
   const [comments, setComments] = useState([]);
+  const [saved, setSaved] = useState([]);
+  const [savedItems, setSavedItems] = useState([]);
+
   const karmaData = [
     {
       month: "Current",
@@ -33,54 +38,6 @@ const KarmaOverview = ({ userData }) => {
     { name: 'Awardee Karma', value: userData.awardee_karma, color: '#EF4444' },
   ];
 
-  const CustomTooltip = ({ active, payload, label }) => {
-    if (active && payload && payload.length) {
-      return (
-        <div className="bg-gray-800/70 backdrop-blur-md border border-gray-600/40 rounded-lg p-3 shadow-xl">
-          <p className="text-white font-semibold">{label}</p>
-          {payload.map((entry) => (
-            <p key={entry.dataKey} style={{ color: entry.color }}>
-              {entry.name}: {entry.value.toLocaleString()}
-            </p>
-          ))}
-        </div>
-      );
-    }
-    return null;
-  };
-
-  // useEffect(() => {
-  //   const fetchAllComments = async () => {
-  //     if (!session?.user?.name) return;
-
-  //     let after = null;
-  //     let allComments = [];
-
-  //     try {
-  //       while (true) {
-  //         const res = await fetch(
-  //           `/api/reddit/comments?username=${session.user.name}&accessToken=${session.accessToken}${after ? `&after=${after}` : ''}`
-  //         );
-  //         const data = await res.json();
-
-  //         const comments = data?.data?.children || [];
-  //         allComments.push(...comments);
-
-  //         after = data?.data?.after;
-  //         if (!after) break;
-  //       }
-
-  //       setComments(allComments);
-  //     } catch (err) {
-  //       toast.error("Something went wrong");
-  //       console.error("Fetch error:", err);
-  //     }
-  //   };
-
-  //   if (status === "authenticated") {
-  //     fetchAllComments();
-  //   }
-  // }, [session, status]);
 
   useEffect(() => {
     const fetchAllComments = async () => {
@@ -130,25 +87,9 @@ const KarmaOverview = ({ userData }) => {
   const sortedByUpvotes = [...comments].sort(
     (a, b) => b.data.ups - a.data.ups
   );
-  const cleanBody = (text) => {
-    if (!text) return "";
-    const isURL = /^https?:\/\//.test(text.trim());
-    return isURL ? "🔗 Image or Link Post" : text;
-  };
 
   const topComment = sortedByUpvotes[0];
   const bottomComment = sortedByUpvotes[sortedByUpvotes.length - 1];
-
-  // const karmaBySubreddit = Object.values(
-  //   comments.reduce((acc, comment) => {
-  //     const sub = comment.data.subreddit;
-  //     const karma = comment.data.ups || 0;
-
-  //     acc[sub] = acc[sub] || { name: sub, size: 0 };
-  //     acc[sub].size += karma;
-  //     return acc;
-  //   }, {})
-  // );
 
   const rawData = Object.values(
     comments.reduce((acc, comment) => {
@@ -227,6 +168,89 @@ const KarmaOverview = ({ userData }) => {
 
   console.log(heatmapDatae);
 
+  useEffect(() => {
+    const fetchAllsaved = async () => {
+      if (!session?.user?.name) return;
+
+      let allSaved = [];
+      let after = null;
+
+      try {
+        while (true) {
+          const { data } = await axios.get('/api/reddit/saved', {
+            params: {
+              username: session.user.name,
+              accessToken: session.accessToken,
+              ...(after && { after }),
+            },
+          });
+
+          const items = data?.data?.children || [];
+          allSaved = [...allSaved, ...items];
+
+          after = data?.data?.after;
+          if (!after) break;
+        }
+        setSavedItems(allSaved);
+      } catch (err) {
+        // toast.error("Something went wrong");
+        notify(
+          "error",
+          `${err}`,
+          "Please check your connection or try logging in again."
+        );
+        console.error("Axios error:", err);
+      }
+    };
+
+    if (status === "authenticated") {
+      fetchAllsaved();
+    }
+  }, [session, status]);
+
+  // useEffect(() => {
+  //   const fetchAllSaved = async () => {
+  //     if (!session?.accessToken) return;
+
+  //     let after = null;
+  //     const allSaved = [];
+
+  //     try {
+  //       while (true) {
+  //         const { data } = await axios.get("/api/reddit/saved", {
+  //           headers: {
+  //             Authorization: `Bearer ${session.accessToken}`,
+  //           },
+  //           params: {
+  //             username: session.user.name,
+  //             limit: 100,
+  //             ...(after ? { after } : {}),
+  //           },
+  //         });
+
+  //         const children = data?.data?.children || [];
+  //         allSaved.push(...children);
+
+  //         after = data?.data?.after;
+
+  //         // Prevent infinite loop or Reddit rate-limit issues
+  //         if (!after || children.length === 0) break;
+  //         console.log(`Fetched ${children.length} saved items (after=${after})`);
+
+  //         // Optional: wait a bit between calls to respect Reddit API
+  //         await new Promise((res) => setTimeout(res, 500));
+  //       }
+
+  //       setSaved(allSaved);
+  //     } catch (error) {
+  //       console.error("Error fetching saved items:", error);
+  //     }
+  //   };
+
+  //   if (status === "authenticated") {
+  //     fetchAllSaved();
+  //   }
+  // }, [session, status]);
 
   return (
     <motion.div
@@ -311,93 +335,9 @@ const KarmaOverview = ({ userData }) => {
         </div>
 
         <div className="">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Most Upvoted */}
-            <div className="block">
-              <div className="relative">
-                <ThumbsUp className="absolute top-2 right-2 text-green-300/80 w-5 h-5 z-2" />
-                <a
-                  href={topComment ? `https://www.reddit.com${topComment.data.permalink}` : "#"}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="block"
-                >
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.2 }}
-                    className="bg-gradient-to-r from-green-500/20 to-green-400/10 backdrop-blur-xl border border-green-500/30 rounded-2xl p-4 shadow-md hover:scale-[1.02] transition-transform duration-200 min-h-[110px]"
-                  >
-                    <h4 className="text-white font-semibold mb-1">Most Upvoted</h4>
-                    {topComment ? (
-                      <>
-                        <p className="text-green-300 font-bold text-lg">
-                          +{topComment.data.ups || 0} votes
-                        </p>
-                        <p className="text-white/80 text-sm line-clamp-2 mt-1">
-                          {cleanBody(topComment.data.body)}
-                        </p>
-                        <p className="text-xs text-white/50 mt-2">
-                          r/{topComment.data.subreddit}
-                        </p>
-                      </>
-                    ) : (
-                      <div className="space-y-2">
-                        <div className="w-1/3 h-4 bg-white/20 rounded animate-pulse" />
-                        <div className="w-2/3 h-4 bg-white/10 rounded animate-pulse" />
-                        <div className="w-1/4 h-3 bg-white/10 rounded animate-pulse" />
-                      </div>
-                    )}
-                  </motion.div>
-                </a>
-              </div>
-            </div>
-
-            {/* Most Downvoted */}
-            <div className="block">
-              <div className="relative">
-                <ThumbsDown className="absolute top-2 right-2 text-red-300/80 w-5 h-5 z-2" />
-                <a
-                  href={bottomComment ? `https://www.reddit.com${bottomComment.data.permalink}` : "#"}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="block"
-                >
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.3 }}
-                    className="bg-gradient-to-r from-red-500/20 to-red-400/10 backdrop-blur-xl border border-red-500/30 rounded-2xl p-4 shadow-md hover:scale-[1.02] transition-transform duration-200 min-h-[110px]"
-                  >
-                    <h4 className="text-white font-semibold mb-1">Most Downvoted</h4>
-                    {bottomComment ? (
-                      <>
-                        <p className="text-red-300 font-bold text-lg">
-                          {bottomComment.data.ups || 0} votes
-                        </p>
-                        <p className="text-white/80 text-sm line-clamp-2 mt-1">
-                          {cleanBody(bottomComment.data.body)}
-                        </p>
-                        <p className="text-xs text-white/50 mt-2">
-                          r/{bottomComment.data.subreddit}
-                        </p>
-                      </>
-                    ) : (
-                      <div className="space-y-2">
-                        <div className="w-1/3 h-4 bg-white/20 rounded animate-pulse" />
-                        <div className="w-2/3 h-4 bg-white/10 rounded animate-pulse" />
-                        <div className="w-1/4 h-3 bg-white/10 rounded animate-pulse" />
-                      </div>
-                    )}
-                  </motion.div>
-                </a>
-              </div>
-            </div>
-          </div>
-
+          <VotesChart topComment={topComment} bottomComment={bottomComment} />
         </div>
       </div>
-
 
       {/* Subreddit Comment Distribution */}
       <motion.div
@@ -438,6 +378,7 @@ const KarmaOverview = ({ userData }) => {
           </ResponsiveContainer>
         </div>
       </motion.div>
+
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -498,10 +439,11 @@ const KarmaOverview = ({ userData }) => {
         </div>
       </motion.div>
 
-
       <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-8 shadow-2xl mt-8">
         <CustomHeatmap data={heatmapDatae} />
       </div>
+
+      <SavedItemsPanel savedItems={savedItems} />
 
     </motion.div >
   );

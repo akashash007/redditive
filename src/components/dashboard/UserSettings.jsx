@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Settings, Eye, Filter, Bell, Globe,
   ToggleLeft as Toggle, Shield, Save
 } from 'lucide-react';
+import { useSession } from 'next-auth/react';
+import axios from 'axios';
 
 const UserSettings = ({ userData, setActiveTab }) => {
   const [settings, setSettings] = useState({
@@ -16,6 +18,7 @@ const UserSettings = ({ userData, setActiveTab }) => {
     topKarmaSubreddits: userData.pref_top_karma_subreddits,
     showSnoovatar: userData.pref_show_snoovatar,
   });
+  const { data: session, status } = useSession();
 
   const [hasChanges, setHasChanges] = useState(false);
 
@@ -51,11 +54,11 @@ const UserSettings = ({ userData, setActiveTab }) => {
     red: 'from-red-500 to-red-600',
   };
 
+
+
+
   return (
     <motion.div
-      // initial={{ opacity: 0, scale: 0.95 }}
-      // animate={{ opacity: 1, scale: 1 }}
-      // transition={{ type: "spring", stiffness: 300, damping: 30 }}
       key="settings"
       initial={{ opacity: 0, x: 100 }}
       animate={{ opacity: 1, x: 0 }}
