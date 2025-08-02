@@ -1,14 +1,15 @@
+// pages/settings.jsx
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
-import Overview from "@/components/ui/overview";
-import { fetchFromEndpoint } from "@/services/redditApi";
 import ROUTES from "@/config/routeConfig";
-import { Loader } from "@/components/loader";
+import { fetchFromEndpoint } from "@/services/redditApi";
 import { useNotify } from "@/utils/NotificationContext";
+import { Loader } from "@/components/loader";
+import UserSettings from "@/components/dashboard/UserSettings";
 
-export default function DashboardPage() {
+export default function SettingsPage() {
     const { data: session, status } = useSession();
     const [profile, setProfile] = useState(null);
     const router = useRouter();
@@ -24,7 +25,11 @@ export default function DashboardPage() {
         const fetchProfile = async () => {
             if (!session?.accessToken || !session?.user?.name) return;
             try {
-                const data = await fetchFromEndpoint("getUserProfile", session.accessToken, session.user.name);
+                const data = await fetchFromEndpoint(
+                    "getUserProfile",
+                    session.accessToken,
+                    session.user.name
+                );
                 setProfile(data);
             } catch (err) {
                 console.error("Failed to fetch profile", err);
@@ -41,7 +46,7 @@ export default function DashboardPage() {
 
     return (
         <DashboardLayout>
-            <Overview profile={profile} />
+            <UserSettings userData={profile} />
         </DashboardLayout>
     );
 }

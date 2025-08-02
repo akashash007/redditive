@@ -443,8 +443,6 @@ const KarmaOverview = ({ userData }) => {
         <CustomHeatmap data={heatmapDatae} />
       </div>
 
-      <SavedItemsPanel savedItems={savedItems} />
-
     </motion.div >
   );
 };

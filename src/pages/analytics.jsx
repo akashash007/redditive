@@ -1,14 +1,15 @@
+// pages/analytics.jsx
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
-import Overview from "@/components/ui/overview";
-import { fetchFromEndpoint } from "@/services/redditApi";
 import ROUTES from "@/config/routeConfig";
-import { Loader } from "@/components/loader";
+import { fetchFromEndpoint } from "@/services/redditApi";
 import { useNotify } from "@/utils/NotificationContext";
+import { Loader } from "@/components/loader";
+import KarmaOverview from "@/components/dashboard/KarmaOverview";
 
-export default function DashboardPage() {
+export default function AnalyticsPage() {
     const { data: session, status } = useSession();
     const [profile, setProfile] = useState(null);
     const router = useRouter();
@@ -41,7 +42,7 @@ export default function DashboardPage() {
 
     return (
         <DashboardLayout>
-            <Overview profile={profile} />
+            <KarmaOverview userData={profile} />
         </DashboardLayout>
     );
 }

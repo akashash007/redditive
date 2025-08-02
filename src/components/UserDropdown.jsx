@@ -1,17 +1,18 @@
 import { useState, useRef, useEffect } from "react";
-import { LogOut, Settings } from "lucide-react";
+import { Award, LogOut, Settings } from "lucide-react";
 import { signOut } from "next-auth/react";
 import ROUTES from "@/config/routeConfig";
 import ConfirmLogoutModal from "./ui/ConfirmLogoutModal";
+import { useRouter } from "next/router";
 
 const fallbackAvatar = "/redditive_favicon.png";
 
 const UserDropdown = ({ profile, session, setActiveTab }) => {
     const [isOpen, setIsOpen] = useState(false);
-    const [avatarSrc, setAvatarSrc] = useState(profile?.snoovatar_img || profile?.icon_img || fallbackAvatar);
+    const [avatarSrc, setAvatarSrc] = useState(fallbackAvatar);
     const dropdownRef = useRef(null);
     const [showConfirm, setShowConfirm] = useState(false);
-
+    const router = useRouter();
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -23,9 +24,12 @@ const UserDropdown = ({ profile, session, setActiveTab }) => {
     }, []);
 
     useEffect(() => {
-        // In case profile updates later
-        setAvatarSrc(profile?.snoovatar_img || profile?.icon_img || fallbackAvatar);
+        if (profile) {
+            const newSrc = profile.snoovatar_img || profile.icon_img || fallbackAvatar;
+            setAvatarSrc(newSrc);
+        }
     }, [profile]);
+    console.log("Dropdown profile:", profile);
 
     return (
         <div className="relative inline-block" ref={dropdownRef}>
@@ -42,7 +46,7 @@ const UserDropdown = ({ profile, session, setActiveTab }) => {
                     <button
                         onClick={() => {
                             setIsOpen(false);
-                            setActiveTab("settings");
+                            router.push(ROUTES.SETTINGS);
                         }}
                         className="cursor-pointer flex items-center w-full px-4 py-2 text-left hover:bg-gray-700/40 transition"
                     >
@@ -50,9 +54,18 @@ const UserDropdown = ({ profile, session, setActiveTab }) => {
                         Settings
                     </button>
                     <button
-                        // onClick={() => signOut({ callbackUrl: ROUTES.HOME })}
                         onClick={() => {
-                            setShowConfirm(true); // show modal instead of logging out immediately
+                            setIsOpen(false);
+                            router.push(ROUTES.SAVED);
+                        }}
+                        className="cursor-pointer flex items-center w-full px-4 py-2 text-left hover:bg-gray-700/40 transition"
+                    >
+                        <Award className="w-4 h-4 mr-2" />
+                        Saved Items
+                    </button>
+                    <button
+                        onClick={() => {
+                            setShowConfirm(true);
                             setIsOpen(false);
                         }}
                         className="cursor-pointer flex items-center w-full px-4 py-2 text-left hover:bg-red-500/20 text-red-400 hover:text-white transition"
@@ -62,6 +75,7 @@ const UserDropdown = ({ profile, session, setActiveTab }) => {
                     </button>
                 </div>
             )}
+
             <ConfirmLogoutModal
                 isOpen={showConfirm}
                 onClose={() => setShowConfirm(false)}

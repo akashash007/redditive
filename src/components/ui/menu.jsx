@@ -1,11 +1,25 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
+import { useRouter } from 'next/router';
 import UserDropdown from '../UserDropdown';
+import ROUTES from '@/config/routeConfig';
 
-const Menu = ({ tabs, activeTab, setActiveTab, profile, session }) => {
+const Menu = ({ tabs, setActiveTab, profile, session }) => {
     const rightTabs = ['overview', 'analytics'];
     const containerRef = useRef(null);
     const [activeRect, setActiveRect] = useState(null);
+    const router = useRouter();
+
+    const pathToTab = {
+        "/dashboard": "overview",
+        "/analytics": "analytics",
+        "/settings": "settings",
+        "/saved": "saved",
+    };
+
+    const { pathname } = useRouter();
+    const activeTab = pathToTab[pathname] || "overview";
+
     useEffect(() => {
         const el = containerRef.current?.querySelector(`[data-tab="${activeTab}"]`);
         if (el && containerRef.current) {
@@ -19,6 +33,7 @@ const Menu = ({ tabs, activeTab, setActiveTab, profile, session }) => {
             });
         }
     }, [activeTab]);
+
     return (
         <motion.header
             initial={{ y: -100, opacity: 0 }}
@@ -34,51 +49,13 @@ const Menu = ({ tabs, activeTab, setActiveTab, profile, session }) => {
                     Redditive
                 </div>
 
-                {/* Center: Tabs (excluding rightTabs) */}
-                <nav className="hidden md:flex space-x-1">
-                    {tabs.filter(tab => !rightTabs.includes(tab.id)).map(tab => {
-                        const Icon = tab.icon;
-                        return (
-                            <motion.button
-                                key={tab.id}
-                                whileTap={{ scale: 0.95 }}
-                                onClick={() => setActiveTab(tab.id)}
-                                className={`flex items-center px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-300 ${activeTab === tab.id
-                                    ? 'bg-gradient-to-r from-purple-500 to-blue-500 text-white shadow'
-                                    : 'text-gray-300 hover:text-white hover:bg-gray-700/50'
-                                    }`}
-                            >
-                                <Icon className="w-4 h-4 mr-1" />
-                                <span>{tab.label}</span>
-                            </motion.button>
-                        );
-                    })}
-                </nav>
-
-                {/* Right: Overview, Analytics, and Avatar */}
+                {/* Right: Right Tabs + Avatar */}
                 <div className="flex items-center space-x-2">
-                    {/* {tabs.filter(tab => rightTabs.includes(tab.id)).map(tab => {
-                        const Icon = tab.icon;
-                        return (
-                            <motion.button
-                                key={tab.id}
-                                whileTap={{ scale: 0.95 }}
-                                onClick={() => setActiveTab(tab.id)}
-                                className={`flex items-center px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-300 ${activeTab === tab.id
-                                    ? 'bg-gradient-to-r from-purple-500 to-blue-500 text-white shadow'
-                                    : 'text-gray-300 hover:text-white hover:bg-gray-700/50'
-                                    }`}
-                            >
-                                <Icon className="w-4 h-4 mr-1" />
-                                <span>{tab.label}</span>
-                            </motion.button>
-                        );
-                    })} */}
                     <div
                         ref={containerRef}
                         className="relative flex items-center space-x-2"
                     >
-                        {/* Animated background pill */}
+                        {/* Active tab pill background */}
                         {activeRect && (
                             <motion.div
                                 className="absolute rounded-full bg-gradient-to-r from-purple-500 to-blue-500 shadow z-0"
@@ -93,28 +70,31 @@ const Menu = ({ tabs, activeTab, setActiveTab, profile, session }) => {
                             />
                         )}
 
-                        {/* Tab buttons */}
-                        {tabs.filter(tab => rightTabs.includes(tab.id)).map(tab => {
+                        {/* Right-aligned tabs */}
+                        {tabs.map(tab => {
                             const Icon = tab.icon;
                             return (
-                                <button
+                                <motion.button
                                     key={tab.id}
-                                    data-tab={tab.id}
-                                    onClick={() => setActiveTab(tab.id)}
-                                    className="relative z-10 flex items-center px-4 py-1.5 rounded-full text-sm font-medium text-white transition-all duration-300"
+                                    whileTap={{ scale: 0.95 }}
+                                    onClick={() => {
+                                        const route = ROUTES[tab.id.toUpperCase()];
+                                        if (route) router.push(route);
+                                    }}
+                                    className={`flex items-center px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-300 ${activeTab === tab.id
+                                        ? "bg-gradient-to-r from-purple-500 to-blue-500 text-white shadow"
+                                        : "text-gray-300 hover:text-white hover:bg-gray-700/50"
+                                        }`}
                                 >
-                                    <span className="relative z-10 flex items-center">
-                                        <Icon className="w-4 h-4 mr-1" />
-                                        {tab.label}
-                                    </span>
-                                </button>
+                                    <Icon className="w-4 h-4 mr-1" />
+                                    <span>{tab.label}</span>
+                                </motion.button>
                             );
                         })}
                     </div>
 
-
-
-                    <UserDropdown profile={profile} session={session} setActiveTab={setActiveTab} />
+                    {/* User Dropdown */}
+                    <UserDropdown profile={profile} session={session} />
                 </div>
             </div>
         </motion.header>

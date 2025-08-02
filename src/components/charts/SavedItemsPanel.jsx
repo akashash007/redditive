@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useNotify } from "@/utils/NotificationContext";
+import { getBestThumbnail } from "@/utils/redditHelpers";
 
 const FALLBACK_IMAGE = "/redditive_favicon.png";
 
@@ -135,7 +136,7 @@ export default function SavedItemsPanel({ savedItems = [] }) {
     ).sort();
 
     return (
-        <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-8 shadow-2xl mt-8">
+        <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-8 shadow-2xl">
             {/* Header */}
             <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-6">
                 {/* Filter Tabs */}
@@ -265,46 +266,46 @@ export default function SavedItemsPanel({ savedItems = [] }) {
                             const title = item.data.title || "Untitled";
                             const body = item.data.body || item.data.selftext || "";
 
-                            let thumbnail = FALLBACK_IMAGE;
+                            // let thumbnail = FALLBACK_IMAGE;
 
-                            const isVideo = item.data.is_video === true;
-                            const isGallery = item.data.is_gallery === true;
-                            const isValidThumbnail =
-                                item.data.thumbnail &&
-                                item.data.thumbnail.startsWith("http") &&
-                                !["default", "self", "image", "nsfw", "spoiler"].includes(
-                                    item.data.thumbnail
-                                );
+                            // const isVideo = item.data.is_video === true;
+                            // const isGallery = item.data.is_gallery === true;
+                            // const isValidThumbnail =
+                            //     item.data.thumbnail &&
+                            //     item.data.thumbnail.startsWith("http") &&
+                            //     !["default", "self", "image", "nsfw", "spoiler"].includes(
+                            //         item.data.thumbnail
+                            //     );
 
-                            const previewImage = item.data.preview?.images?.[0]?.source?.url?.replace(
-                                /&amp;/g,
-                                "&"
-                            );
+                            // const previewImage = item.data.preview?.images?.[0]?.source?.url?.replace(
+                            //     /&amp;/g,
+                            //     "&"
+                            // );
 
-                            const galleryItems = item.data.gallery_data?.items;
-                            const mediaMetadata = item.data.media_metadata;
+                            // const galleryItems = item.data.gallery_data?.items;
+                            // const mediaMetadata = item.data.media_metadata;
 
-                            let galleryImage = null;
-                            if (isGallery && galleryItems?.length && mediaMetadata) {
-                                const firstId = galleryItems[0].media_id;
-                                const firstImage = mediaMetadata[firstId];
-                                if (firstImage?.s?.u) {
-                                    galleryImage = firstImage.s.u.replace(/&amp;/g, "&");
-                                }
-                            }
+                            // let galleryImage = null;
+                            // if (isGallery && galleryItems?.length && mediaMetadata) {
+                            //     const firstId = galleryItems[0].media_id;
+                            //     const firstImage = mediaMetadata[firstId];
+                            //     if (firstImage?.s?.u) {
+                            //         galleryImage = firstImage.s.u.replace(/&amp;/g, "&");
+                            //     }
+                            // }
 
-                            if (galleryImage) {
-                                thumbnail = galleryImage;
-                            } else if (isVideo && previewImage) {
-                                thumbnail = previewImage;
-                            } else if (previewImage) {
-                                thumbnail = previewImage;
-                            } else if (
-                                isValidThumbnail &&
-                                !item.data.thumbnail.includes("external-preview")
-                            ) {
-                                thumbnail = item.data.thumbnail;
-                            }
+                            // if (galleryImage) {
+                            //     thumbnail = galleryImage;
+                            // } else if (isVideo && previewImage) {
+                            //     thumbnail = previewImage;
+                            // } else if (previewImage) {
+                            //     thumbnail = previewImage;
+                            // } else if (
+                            //     isValidThumbnail &&
+                            //     !item.data.thumbnail.includes("external-preview")
+                            // ) {
+                            //     thumbnail = item.data.thumbnail;
+                            // }
 
                             return (
                                 <a
@@ -312,10 +313,11 @@ export default function SavedItemsPanel({ savedItems = [] }) {
                                     href={`https://reddit.com${item.data.permalink}`}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="flex gap-4 bg-white/5 hover:bg-white/10 transition rounded-xl p-4 border border-white/10"
+                                    className="flex gap-4 bg-white/5 hover:bg-white/10 transition rounded-xl p-2 border border-white/10"
                                 >
                                     <img
-                                        src={thumbnail}
+                                        // src={thumbnail}
+                                        src={getBestThumbnail(item)}
                                         alt="Thumbnail"
                                         className="w-24 h-24 object-cover rounded-lg flex-shrink-0"
                                     />
@@ -339,7 +341,6 @@ export default function SavedItemsPanel({ savedItems = [] }) {
                     No saved items found. Try adjusting your search or filters.
                 </div>
             )}
-
         </div>
     );
 }

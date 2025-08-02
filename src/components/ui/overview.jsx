@@ -58,9 +58,9 @@ const Overview = ({ profile }) => {
 
             {/* Account Features and Subreddit Panel */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <motion.div variants={itemVariants}>
+                {/* <motion.div variants={itemVariants}>
                     <AccountFeatures userData={profile} />
-                </motion.div>
+                </motion.div> */}
                 {/* <motion.div variants={itemVariants}>
                     <SubredditPanel userData={profile} />
                 </motion.div> */}
