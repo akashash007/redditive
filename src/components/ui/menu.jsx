@@ -3,8 +3,10 @@ import { motion } from 'framer-motion';
 import { useRouter } from 'next/router';
 import UserDropdown from '../UserDropdown';
 import ROUTES from '@/config/routeConfig';
+import { NotificationProvider } from '@/utils/NotificationContext';
+import NotificationDropdown from '../NotificationDropdown';
 
-const Menu = ({ tabs, setActiveTab, profile, session }) => {
+const Menu = ({ tabs, setActiveTab, profile, session, notifications }) => {
     const rightTabs = ['overview', 'analytics'];
     const containerRef = useRef(null);
     const [activeRect, setActiveRect] = useState(null);
@@ -92,6 +94,9 @@ const Menu = ({ tabs, setActiveTab, profile, session }) => {
                             );
                         })}
                     </div>
+
+                    {/* Notification Dropdown */}
+                    <NotificationDropdown notifications={notifications} />
 
                     {/* User Dropdown */}
                     <UserDropdown profile={profile} session={session} />
