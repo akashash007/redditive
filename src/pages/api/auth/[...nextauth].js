@@ -12,7 +12,7 @@ export default NextAuth({
             clientSecret: process.env.REDDIT_CLIENT_SECRET,
             authorization: {
                 params: {
-                    scope: "identity history read privatemessages",
+                    scope: "identity history read privatemessages mysubreddits",
                 },
             },
         }),

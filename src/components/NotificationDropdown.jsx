@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Bell, MessageSquareText, Reply } from "lucide-react";
+import { Bell, ChevronDown, MessageSquareText, Reply } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 // Format relative time
@@ -26,6 +26,13 @@ const NotificationDropdown = ({ notifications = [], onRefresh }) => {
     const [typeFilter, setTypeFilter] = useState("all");
     const [now, setNow] = useState(Math.floor(Date.now() / 1000));
     const dropdownRef = useRef(null);
+    const [open, setOpen] = useState(false);
+
+    const options = [
+        { label: "All", value: "all" },
+        { label: "Comments", value: "comment" },
+        { label: "Chats", value: "chat" },
+    ];
 
     // Poll every 60s
     useEffect(() => {
@@ -104,16 +111,50 @@ const NotificationDropdown = ({ notifications = [], onRefresh }) => {
                             <div className="flex gap-2">
                                 <div className="flex items-center gap-2">
                                     {/* Filter by type */}
-                                    <select
-                                        value={typeFilter}
-                                        onChange={(e) => setTypeFilter(e.target.value)}
-                                        className="text-xs text-gray-300 bg-[#1f1f25]/95 backdrop-blur-md border border-white/10 rounded-full px-3 py-1 focus:outline-none hover:bg-gray-800/40 transition-all shadow-sm"
-                                    >
-                                        <option className="bg-[#1f1f25] text-gray-200 text-sm py-2" value="all">All</option>
-                                        <option className="bg-[#1f1f25] text-gray-200 text-sm py-2" value="comment">Comments</option>
-                                        <option className="bg-[#1f1f25] text-gray-200 text-sm py-2" value="chat">Chats</option>
-                                    </select>
+                                    <div className="relative inline-block text-left">
+                                        {/* Dropdown button */}
+                                        <button
+                                            onClick={() => setOpen((prev) => !prev)}
+                                            className="flex items-center justify-between gap-2 text-xs text-gray-300 bg-[#1f1f25]/95 backdrop-blur-md border border-white/10 rounded-full px-3 py-1 focus:outline-none hover:bg-gray-800/40 transition-all shadow-sm"
+                                        >
+                                            {options.find((o) => o.value === typeFilter)?.label}
+                                            <motion.div
+                                                animate={{ rotate: open ? 180 : 0 }}
+                                                transition={{ duration: 0.2 }}
+                                            >
+                                                <ChevronDown size={14} />
+                                            </motion.div>
+                                        </button>
 
+                                        {/* Dropdown menu */}
+                                        <AnimatePresence>
+                                            {open && (
+                                                <motion.div
+                                                    initial={{ opacity: 0, y: -5 }}
+                                                    animate={{ opacity: 1, y: 0 }}
+                                                    exit={{ opacity: 0, y: -5 }}
+                                                    transition={{ duration: 0.15 }}
+                                                    className="absolute mt-2 w-32 rounded-xl bg-[#1f1f25]/95 backdrop-blur-lg border border-white/10 shadow-xl z-20 overflow-hidden"
+                                                >
+                                                    {options.map((opt, idx) => (
+                                                        <motion.button
+                                                            key={opt.value}
+                                                            initial={{ x: 10, opacity: 0 }}
+                                                            animate={{ x: 0, opacity: 1 }}
+                                                            transition={{ delay: idx * 0.05 }}
+                                                            onClick={() => {
+                                                                setTypeFilter(opt.value);
+                                                                setOpen(false);
+                                                            }}
+                                                            className="block w-full text-left px-4 py-2 text-xs text-gray-200 hover:bg-white/10 transition truncate"
+                                                        >
+                                                            {opt.label}
+                                                        </motion.button>
+                                                    ))}
+                                                </motion.div>
+                                            )}
+                                        </AnimatePresence>
+                                    </div>
                                     {/* Toggle new/all */}
                                     <button
                                         onClick={() => setShowOnlyNew((p) => !p)}

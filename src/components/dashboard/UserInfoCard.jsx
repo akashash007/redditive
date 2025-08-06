@@ -4,14 +4,18 @@ import { motion } from "framer-motion";
 import { Calendar, Mail, Shield, Star } from "lucide-react";
 import { fetchFromEndpoint, getRedditData } from "@/services/redditApi";
 import { useSession } from "next-auth/react";
+import SubscribedCommunities from "../charts/SubscribedCommunities";
 
 const UserInfoCard = ({ userData }) => {
   if (!userData || !userData.created) return null;
   const { data: session, status } = useSession();
   const [trophies, setTrophies] = useState([]);
+  const [subscribedSubs, setSubscribedSubs] = useState([]);
+  const [visibleCount, setVisibleCount] = useState(20);
 
   const createdDate = new Date(userData.created * 1000).toLocaleDateString();
   const bannerUrl = userData?.subreddit?.banner_img?.replace(/&amp;/g, "&");
+
 
   useEffect(() => {
     const fetchTrophies = async () => {
@@ -32,6 +36,44 @@ const UserInfoCard = ({ userData }) => {
     }
   }, [session, status]);
 
+  useEffect(() => {
+    const fetchSubscribedSubs = async () => {
+      if (!session?.accessToken) return;
+      try {
+        const res = await fetch(
+          `/api/reddit/subscriber?accessToken=${session.accessToken}`
+        );
+        const json = await res.json();
+
+        const subs = json?.data?.children?.map(s => s.data) || [];
+        setSubscribedSubs(subs);
+      } catch (err) {
+        console.error("Failed to fetch subscribed subreddits", err);
+      }
+    };
+
+    if (status === "authenticated") {
+      fetchSubscribedSubs();
+    }
+  }, [session, status]);
+
+
+  // useEffect(() => {
+  //   const fetchSubscribedSubs = async () => {
+  //     if (!session?.accessToken) return;
+  //     try {
+  //       const res = await fetch(`/api/reddit/subscriber?accessToken=${session.accessToken}`)
+  //       // const json = await res.json();
+  //     } catch (err) {
+  //       console.error("Failed to fetch messages", err);
+  //       notify("error", "Message Error", "Failed to load notifications.");
+  //     }
+  //   };
+
+  //   if (status === "authenticated") {
+  //     fetchSubscribedSubs();
+  //   }
+  // }, [session, status]);
 
   return (
     <div className="relative">
@@ -121,6 +163,9 @@ const UserInfoCard = ({ userData }) => {
           </div>
         </div>
       </motion.div>
+
+      <SubscribedCommunities subscribedSubs={subscribedSubs} />
+
     </div>
   );
 };
@@ -131,6 +176,8 @@ const InfoBlock = ({ label, value, color }) => (
     <div className="text-sm text-gray-400">{label}</div>
   </div>
 );
+
+
 
 const WithIcon = ({ icon, label }) => (
   <div className="flex items-center space-x-2">
