@@ -17,6 +17,7 @@ const Menu = ({ tabs, setActiveTab, profile, session, notifications }) => {
         "/analytics": "analytics",
         "/settings": "settings",
         "/saved": "saved",
+        "/submitted": "submitted",
     };
 
     const { pathname } = useRouter();

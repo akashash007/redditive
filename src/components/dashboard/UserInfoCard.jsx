@@ -5,6 +5,8 @@ import { Calendar, Mail, Shield, Star } from "lucide-react";
 import { fetchFromEndpoint, getRedditData } from "@/services/redditApi";
 import { useSession } from "next-auth/react";
 import SubscribedCommunities from "../charts/SubscribedCommunities";
+import HourlyActivity from "../charts/RedditPostCard";
+import RedditPostCard from "../charts/RedditPostCard";
 
 const UserInfoCard = ({ userData }) => {
   if (!userData || !userData.created) return null;
@@ -12,6 +14,7 @@ const UserInfoCard = ({ userData }) => {
   const [trophies, setTrophies] = useState([]);
   const [subscribedSubs, setSubscribedSubs] = useState([]);
   const [visibleCount, setVisibleCount] = useState(20);
+  const [hoursActivity, setHoursActivity] = useState(Array(24).fill(0));
 
   const createdDate = new Date(userData.created * 1000).toLocaleDateString();
   const bannerUrl = userData?.subreddit?.banner_img?.replace(/&amp;/g, "&");
@@ -58,6 +61,19 @@ const UserInfoCard = ({ userData }) => {
   }, [session, status]);
 
 
+  // const fetchTrophies = async (username) => {
+  //   const res = await fetch(
+  //     `/api/reddit/submitted?username=Ash_1913&accessToken=${session.accessToken}`
+  //   );
+  //   const json = await res.json();
+  //   return json?.data?.trophies || [];
+  // };
+
+  // useEffect(() => {
+  //   fetchTrophies()
+  // }, [])
+
+
   // useEffect(() => {
   //   const fetchSubscribedSubs = async () => {
   //     if (!session?.accessToken) return;
@@ -74,6 +90,9 @@ const UserInfoCard = ({ userData }) => {
   //     fetchSubscribedSubs();
   //   }
   // }, [session, status]);
+
+
+
 
   return (
     <div className="relative">

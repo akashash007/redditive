@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react";
-import { Award, LogOut, Settings } from "lucide-react";
+import { Award, LogOut, PenSquare, Settings, Upload } from "lucide-react";
 import { signOut } from "next-auth/react";
 import ROUTES from "@/config/routeConfig";
 import ConfirmLogoutModal from "./ui/ConfirmLogoutModal";
@@ -55,8 +55,8 @@ const UserDropdown = ({ profile, session, setActiveTab }) => {
                     <button
                         onClick={() => navigate(ROUTES.SETTINGS)}
                         className={`cursor-pointer flex items-center w-full px-4 py-2 text-left transition hover:bg-gray-700/40 ${isActive(ROUTES.SETTINGS)
-                                ? "bg-gradient-to-r from-purple-800/50 to-purple-600/70 font-semibold"
-                                : ""
+                            ? "bg-gradient-to-r from-purple-800/50 to-purple-600/70 font-semibold"
+                            : ""
                             }`}
                     >
                         <Settings className="w-4 h-4 mr-2" />
@@ -65,12 +65,22 @@ const UserDropdown = ({ profile, session, setActiveTab }) => {
                     <button
                         onClick={() => navigate(ROUTES.SAVED)}
                         className={`cursor-pointer flex items-center w-full px-4 py-2 text-left transition hover:bg-gray-700/40 ${isActive(ROUTES.SAVED)
-                                ? "bg-gradient-to-r from-purple-800/50 to-purple-600/70 font-semibold"
-                                : ""
+                            ? "bg-gradient-to-r from-purple-800/50 to-purple-600/70 font-semibold"
+                            : ""
                             }`}
                     >
                         <Award className="w-4 h-4 mr-2" />
                         Saved Items
+                    </button>
+                    <button
+                        onClick={() => navigate(ROUTES.SUBMITTED)}
+                        className={`cursor-pointer flex items-center w-full px-4 py-2 text-left transition hover:bg-gray-700/40 ${isActive(ROUTES.SUBMITTED)
+                            ? "bg-gradient-to-r from-purple-800/50 to-purple-600/70 font-semibold"
+                            : ""
+                            }`}
+                    >
+                        <PenSquare className="w-4 h-4 mr-2" />
+                        Posts
                     </button>
                     <button
                         onClick={() => {

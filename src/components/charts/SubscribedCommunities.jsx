@@ -217,7 +217,7 @@ export default function SubscribedCommunities({ subscribedSubs }) {
                             </div>
                         </div>
 
-                        <div className="flex items-center gap-4">
+                        {/* <div className="flex items-center gap-4">
                             <Slider
                                 value={[visibleCount]}
                                 min={5}
@@ -226,6 +226,27 @@ export default function SubscribedCommunities({ subscribedSubs }) {
                                 onValueChange={(val) => setVisibleCount(val[0])}
                                 className="w-40"
                             />
+                            <motion.span
+                                key={visibleCount}
+                                initial={{ scale: 0.5, opacity: 0 }}
+                                animate={{ scale: 1, opacity: 1 }}
+                                transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                                className="text-sm text-gray-300 font-medium"
+                            >
+                                {visibleCount}
+                            </motion.span>
+                        </div> */}
+                        <div className="flex items-center gap-4">
+                            <input
+                                type="range"
+                                value={visibleCount}
+                                min={5}
+                                max={Math.min(100, subscribedSubs.length)}
+                                step={1}
+                                onChange={(e) => setVisibleCount(Number(e.target.value))}
+                                className="w-40 h-2 rounded-lg appearance-none cursor-pointer bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 transition-all duration-200 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:shadow-md [&::-webkit-slider-thumb]:border [&::-webkit-slider-thumb]:border-gray-300"
+                            />
+
                             <motion.span
                                 key={visibleCount}
                                 initial={{ scale: 0.5, opacity: 0 }}
