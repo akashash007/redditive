@@ -150,7 +150,7 @@ export default function SavedPage() {
 
     return (
         <DashboardLayout>
-            <div className="px-1 py-6">
+            <div className="px-1">
 
                 {/* Filters */}
                 <div className="flex flex-wrap justify-between items-center gap-4 mb-6">
@@ -160,7 +160,7 @@ export default function SavedPage() {
                         <div ref={yearRef} className="relative inline-block text-left">
                             <button
                                 onClick={() => setDropdownOpen((prev) => !prev)}
-                                className="flex items-center justify-between gap-2 text-sm text-gray-300 bg-[#1f1f25]/95 backdrop-blur-md border border-white/10 rounded-full px-4 py-2 focus:outline-none hover:bg-gray-800/40 transition-all shadow-sm"
+                                className="flex items-center justify-between gap-2 text-sm text-gray-100 bg-gradient-to-r from-purple-500 to-blue-500 border border-white/10 rounded-full px-4 py-2 focus:outline-none hover:bg-gray-800/40 transition-all shadow-sm"
                             >
                                 {yearOptions.find((o) => o.value === yearFilter)?.label || "All Years"}
                                 <motion.div
@@ -205,7 +205,7 @@ export default function SavedPage() {
                             <div ref={subredditRef} className="relative inline-block text-left">
                                 <button
                                     onClick={() => setSubredditOpen((prev) => !prev)}
-                                    className="flex items-center justify-between gap-2 text-sm text-gray-300 bg-[#1f1f25]/95 backdrop-blur-md border border-white/10 rounded-full px-4 py-2 hover:bg-gray-800/40 transition-all shadow-sm"
+                                    className="flex items-center justify-between gap-2 text-sm text-gray-100 bg-gradient-to-r from-purple-500 to-blue-500 border border-white/10 rounded-full px-4 py-2 hover:bg-gray-800/40 transition-all shadow-sm"
                                 >
                                     {subredditFilter === "all" ? "All Subreddits" : subredditFilter}
                                     <motion.div
@@ -260,7 +260,7 @@ export default function SavedPage() {
                         <div ref={sortRef} className="relative inline-block text-left">
                             <button
                                 onClick={() => setSortOpen((prev) => !prev)}
-                                className="flex items-center justify-between gap-2 text-sm text-gray-300 bg-[#1f1f25]/95 backdrop-blur-md border border-white/10 rounded-full px-4 py-2 hover:bg-gray-800/40 transition-all shadow-sm"
+                                className="flex items-center justify-between gap-2 text-sm text-gray-100 bg-gradient-to-r from-purple-500 to-blue-500 border border-white/10 rounded-full px-4 py-2  hover:bg-gray-800/40 transition-all shadow-sm"
                             >
                                 {(() => {
                                     switch (sortBy) {

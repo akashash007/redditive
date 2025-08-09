@@ -9,58 +9,6 @@ import ROUTES from "@/config/routeConfig";
 import { User, BarChart2 } from "lucide-react";
 import { useNotify } from "@/utils/NotificationContext";
 
-// export default function DashboardLayout({ children }) {
-//     const { data: session, status } = useSession();
-//     const router = useRouter();
-//     const [profile, setProfile] = useState(null);
-//     const { notify } = useNotify();
-
-//     useEffect(() => {
-//         if (status === "unauthenticated") {
-//             router.push(ROUTES.LOGIN);
-//         }
-//     }, [status]);
-
-//     useEffect(() => {
-//         const fetchProfile = async () => {
-//             if (!session?.accessToken || !session?.user?.name) return;
-//             try {
-//                 const data = await fetchFromEndpoint("getUserProfile", session.accessToken, session.user.name);
-//                 setProfile(data);
-//             } catch (err) {
-//                 console.error("Failed to fetch profile", err);
-//                 notify("error", "Profile Error", "Failed to load profile info.");
-//             }
-//         };
-
-//         if (status === "authenticated") {
-//             fetchProfile();
-//         }
-//     }, [session, status]);
-
-//     if (status === "loading" || !profile) return <Loader />;
-
-//     const tabs = [
-//         { id: "overview", label: "Overview", icon: User },
-//         { id: "analytics", label: "Analytics", icon: BarChart2 },
-//     ];
-
-//     return (
-//         <main className="relative min-h-screen w-full overflow-hidden">
-//             <FloatingBackground particleCount={25} />
-//             <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900/30 to-indigo-900/40 flex items-start justify-center relative overflow-hidden pt-20 px-6">
-//                 <Menu
-//                     tabs={tabs}
-//                     profile={profile} // now real Reddit profile
-//                     session={session}
-//                     setActiveTab={() => { }}
-//                 />
-//                 <div className="w-full max-w-7xl mx-auto my-8">{children}</div>
-//             </div>
-//         </main>
-//     );
-// }
-
 export default function DashboardLayout({ children }) {
     const { data: session, status } = useSession();
     const router = useRouter();
@@ -120,10 +68,32 @@ export default function DashboardLayout({ children }) {
         { id: "analytics", label: "Analytics", icon: BarChart2 },
     ];
 
+    // return (
+    //     <main className="relative min-h-screen w-full overflow-hidden">
+    //         <FloatingBackground particleCount={25} />
+    //         <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900/30 to-indigo-900/40 flex items-start justify-center relative overflow-hidden pt-20 px-6">
+    //             <Menu
+    //                 tabs={tabs}
+    //                 profile={profile}
+    //                 session={session}
+    //                 setActiveTab={() => { }}
+    //                 notifications={notifications}
+    //             />
+    //             <div className="w-full max-w-7xl mx-auto my-8">{children}</div>
+    //         </div>
+    //     </main>
+    // );
+
     return (
         <main className="relative min-h-screen w-full overflow-hidden">
-            <FloatingBackground particleCount={25} />
-            <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900/30 to-indigo-900/40 flex items-start justify-center relative overflow-hidden pt-20 px-6">
+            {/* Fixed background */}
+            <div className="fixed inset-0 -z-10">
+                <FloatingBackground particleCount={25} />
+                <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-purple-900/30 to-indigo-900/40" />
+            </div>
+
+            {/* Foreground content */}
+            <div className="min-h-screen flex items-start justify-center relative pt-20 px-6 z-10">
                 <Menu
                     tabs={tabs}
                     profile={profile}
@@ -135,4 +105,5 @@ export default function DashboardLayout({ children }) {
             </div>
         </main>
     );
+
 }
