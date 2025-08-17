@@ -93,7 +93,7 @@ export default function DashboardLayout({ children }) {
             </div>
 
             {/* Foreground content */}
-            <div className="min-h-screen flex items-start justify-center relative pt-20 px-6 z-10">
+            <div className="min-h-screen flex items-start justify-center relative pt-14 md:pt-20 px-3 md:px-6 z-10">
                 <Menu
                     tabs={tabs}
                     profile={profile}

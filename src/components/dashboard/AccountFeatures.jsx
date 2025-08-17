@@ -94,7 +94,7 @@ const AccountFeatures = ({ userData }) => {
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ type: "spring", stiffness: 300, damping: 30 }}
-      className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-6 shadow-xl px-8 py-10"
+      className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl shadow-xl px-4 md:px-8 md:py-10 py-5"
     >
       <div className="flex items-center justify-between mb-6">
         <div>

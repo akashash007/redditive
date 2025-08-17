@@ -7,6 +7,8 @@ const ROUTES = {
     SAVED: "/saved",
     SETTINGS: "/settings",
     SUBMITTED: "/submitted",
+    PRIVACY: "/privacy",
+    TERMS: "/terms",
 };
 
 export default ROUTES;

@@ -144,11 +144,11 @@ export default function SavedItemsPanel({ savedItems = [] }) {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, ease: "easeOut" }}
-            className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-8 shadow-2xl"
+            className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-4 md-p-8 shadow-2xl"
         >
             <div >
                 {/* Header */}
-                <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-6">
+                <div className="hidden md:flex flex-col md:flex-row justify-between items-center gap-4 mb-6">
                     {/* Filter Tabs */}
                     <div ref={containerRef} className="relative flex items-center space-x-2">
                         {activeRect && (
@@ -159,23 +159,6 @@ export default function SavedItemsPanel({ savedItems = [] }) {
                                 transition={{ type: "spring", stiffness: 500, damping: 30 }}
                             />
                         )}
-                        {/* {filterTabs.map(({ id, label, icon: Icon }) => (
-                            <button
-                                key={id}
-                                data-tab={id}
-                                onClick={() => setActiveFilter(id)}
-                                className={`relative z-10 flex items-center px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-300 ${activeFilter === id
-                                    ? "text-white"
-                                    : "text-gray-300 hover:text-white hover:bg-gray-700/50"
-                                    }`}
-                            >
-                                <Icon className="w-4 h-4 mr-1" />
-                                {label}
-                                <span className="ml-2 text-xs bg-white/20 text-white px-2 py-0.5 rounded-full">
-                                    {countMap[id]}
-                                </span>
-                            </button>
-                        ))} */}
 
                         {filterTabs.map(({ id, label, icon: Icon }) => (
                             <motion.button
@@ -261,38 +244,6 @@ border border-white/10 shadow-xl custom-scrollbar"
                                 )}
                             </AnimatePresence>
 
-                            {/* {showDropdown && (
-                                <div
-                                    className="absolute top-12 left-0 w-48 max-h-[250px] overflow-y-auto z-20
-                bg-gray-950/60 backdrop-blur-lg text-sm text-gray-200 rounded-xl
-                border border-white/10 shadow-xl custom-scrollbar"
-                                >
-                                    <button
-                                        onClick={() => {
-                                            setSelectedSubreddit("all");
-                                            setActiveFilter("all");
-                                            setShowDropdown(false);
-                                        }}
-                                        className="block w-full px-4 py-2 text-left hover:bg-white/10 transition"
-                                    >
-                                        All Subreddits
-                                    </button>
-
-                                    {uniqueSubreddits.map((sub) => (
-                                        <button
-                                            key={sub}
-                                            onClick={() => {
-                                                setSelectedSubreddit(sub);
-                                                setActiveFilter("all");
-                                                setShowDropdown(false);
-                                            }}
-                                            className="block w-full px-4 py-2 text-left hover:bg-white/10 transition"
-                                        >
-                                            r/{sub} ({grouped[sub]?.length ?? savedItems.filter(i => i.data.subreddit === sub).length})
-                                        </button>
-                                    ))}
-                                </div>
-                            )} */}
                         </div>
 
                         {/* Clear Filters Button */}
@@ -314,6 +265,118 @@ border border-white/10 shadow-xl custom-scrollbar"
 
                     {/* Search */}
                     <div className="relative w-full md:w-64">
+                        <Search className="absolute top-3 left-2 w-4 h-4 text-white/60" />
+                        <input
+                            type="text"
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                            placeholder="Search saved..."
+                            className="pl-8 pr-8 py-2 w-full rounded-full bg-white/10 text-white placeholder:text-white/50 outline-none"
+                        />
+                        {search && (
+                            <button
+                                onClick={() => setSearch("")}
+                                className="absolute top-3 right-2 text-white/60 hover:text-white"
+                            >
+                                <X className="w-4 h-4" />
+                            </button>
+                        )}
+                    </div>
+                </div>
+
+                <div className="flex flex-col gap-3 md:hidden mb-6">
+                    {/* Filter Tabs - Mobile */}
+                    <div className="flex flex-wrap gap-2">
+                        {filterTabs.map(({ id, label, icon: Icon }) => (
+                            <button
+                                key={id}
+                                onClick={() => setActiveFilter(id)}
+                                className={`flex items-center px-3 py-1.5 rounded-full text-sm font-medium transition-all ${activeFilter === id
+                                        ? "bg-gradient-to-r from-purple-500 to-blue-500 text-white shadow"
+                                        : "bg-gray-800/50 text-gray-300 hover:bg-gray-700/50"
+                                    }`}
+                            >
+                                <Icon className="w-4 h-4 mr-1" />
+                                {label}
+                                <span className="ml-2 text-xs bg-white/20 text-white px-2 py-0.5 rounded-full">
+                                    {countMap[id]}
+                                </span>
+                            </button>
+                        ))}
+
+                        {/* Subreddit Filter */}
+                        <div className="relative">
+                            <button
+                                onClick={() => setShowDropdown((prev) => !prev)}
+                                className="flex items-center px-3 py-1.5 rounded-full text-sm font-medium bg-white/10 text-white hover:bg-white/20 transition"
+                            >
+                                r/{selectedSubreddit === "all" ? "All" : selectedSubreddit}
+                                <span className="ml-2 text-xs bg-white/20 text-white px-2 py-0.5 rounded-full">
+                                    {selectedSubreddit === "all"
+                                        ? uniqueSubreddits.length
+                                        : savedItems.filter(i => i.data.subreddit === selectedSubreddit).length}
+                                </span>
+                                <ChevronDown className="ml-1 w-4 h-4" />
+                            </button>
+
+                            <AnimatePresence>
+                                {showDropdown && (
+                                    <motion.div
+                                        initial={{ opacity: 0, y: -10 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        exit={{ opacity: 0, y: -10 }}
+                                        transition={{ duration: 0.25 }}
+                                        className="absolute top-12 left-0 w-48 max-h-[250px] overflow-y-auto overflow-x-hidden z-20
+                        bg-gray-950/60 backdrop-blur-lg text-sm text-gray-200 rounded-xl
+                        border border-white/10 shadow-xl custom-scrollbar"
+                                    >
+                                        <button
+                                            onClick={() => {
+                                                setSelectedSubreddit("all");
+                                                setActiveFilter("all");
+                                                setShowDropdown(false);
+                                            }}
+                                            className="block w-full px-4 py-2 text-left hover:bg-white/10 transition"
+                                        >
+                                            All Subreddits
+                                        </button>
+                                        {uniqueSubreddits.map((sub) => (
+                                            <button
+                                                key={sub}
+                                                onClick={() => {
+                                                    setSelectedSubreddit(sub);
+                                                    setActiveFilter("all");
+                                                    setShowDropdown(false);
+                                                }}
+                                                className="block w-full px-4 py-2 text-left hover:bg-white/10 transition"
+                                            >
+                                                r/{sub} ({grouped[sub]?.length ?? savedItems.filter(i => i.data.subreddit === sub).length})
+                                            </button>
+                                        ))}
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+                        </div>
+
+                        {/* Clear Filters Button */}
+                        {(selectedSubreddit !== "all" || search || activeFilter !== "all") && (
+                            <button
+                                onClick={() => {
+                                    setSearch("");
+                                    setSelectedSubreddit("all");
+                                    setActiveFilter("all");
+                                }}
+                                className="w-8 h-8 rounded-full bg-gray-800/60 backdrop-blur-lg 
+                border border-white/10 shadow-md text-white hover:bg-gray-700/60 
+                flex items-center justify-center transition"
+                            >
+                                <X className="w-4 h-4" />
+                            </button>
+                        )}
+                    </div>
+
+                    {/* Search - Mobile */}
+                    <div className="relative w-full">
                         <Search className="absolute top-3 left-2 w-4 h-4 text-white/60" />
                         <input
                             type="text"
@@ -476,7 +539,7 @@ border border-white/10 shadow-xl custom-scrollbar"
                                         // animate={{ opacity: 1, scale: 1 }}
                                         // exit={{ opacity: 0, scale: 0.95 }}
                                         transition={{ duration: 0.3 }}
-                                        className="flex flex-col md:flex-row gap-4 p-4 rounded-2xl border border-white/10 
+                                        className="flex flex-col md:flex-row gap-4 p-2 md:p-4 rounded-2xl border border-white/10 
              bg-gradient-to-br from-[#2d0b4f]/60 via-[#1e0a3c]/50 to-[#140933]/40 
              backdrop-blur-xl shadow-xl hover:shadow-2xl transition-all duration-300"
                                     >

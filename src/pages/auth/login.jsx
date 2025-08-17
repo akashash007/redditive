@@ -5,6 +5,7 @@ import ROUTES from "@/config/routeConfig";
 import Image from "next/image";
 import { Zap } from "lucide-react";
 import FloatingBackground from "@/components/ui/FloatingBackground";
+import Link from "next/link";
 
 export default function Login() {
 
@@ -18,7 +19,7 @@ export default function Login() {
                 initial={{ opacity: 0, y: 50 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8 }}
-                className="z-10 bg-gray-900/80 backdrop-blur-2xl border border-white/10 shadow-xl shadow-purple-500/20 rounded-xl px-10 py-14 w-full max-w-md text-center"
+                className="z-10 bg-gray-900/80 backdrop-blur-2xl border border-white/10 shadow-xl shadow-purple-500/20 rounded-xl md:px-10 px-4 py-4 md:py-14 lg:py-14 w-full mx-4 max-w-md text-center"
             >
 
                 {/* Logo */}
@@ -73,9 +74,9 @@ export default function Login() {
                 {/* Terms */}
                 <p className="text-xs text-gray-500 mt-8">
                     By connecting, you agree to our{" "}
-                    <a href="/terms" className="underline hover:text-white">Terms of Service</a>{" "}
+                    <Link href="/terms" className="underline hover:text-white">Terms of Service</Link>{" "}
                     and{" "}
-                    <a href="/privacy" className="underline hover:text-white">Privacy Policy</a>.
+                    <Link href="/privacy" className="underline hover:text-white">Privacy Policy</Link>.
                 </p>
             </motion.div>
         </main>

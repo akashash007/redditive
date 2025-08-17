@@ -7,6 +7,7 @@ import { useNotify } from "@/utils/NotificationContext";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
 import SavedItemsPanel from "@/components/charts/SavedItemsPanel";
 import { Loader } from "@/components/loader";
+import ShimmerWrapper from "@/components/ui/ShimmerWrapper";
 
 export default function SavedPage() {
     const { data: session, status } = useSession();
@@ -17,23 +18,6 @@ export default function SavedPage() {
     const [isLoadingMore, setIsLoadingMore] = useState(false);
     const router = useRouter();
     const { notify } = useNotify();
-
-    // const fetchSavedItems = async (afterParam = null) => {
-    //     try {
-    //         const res = await fetch(
-    //             `/api/reddit/saved?username=${session.user.name}&accessToken=${session.accessToken}${afterParam ? `&after=${afterParam}` : ""}`
-    //         );
-    //         const json = await res.json();
-    //         const newItems = json?.data?.children || [];
-
-    //         setSavedItems((prev) => [...prev, ...newItems]);
-    //         setAfter(json?.data?.after || null);
-    //         setHasMore(!!json?.data?.after);
-    //     } catch (err) {
-    //         notify("error", "Fetch Error", "Could not load saved items.");
-    //         console.error(err);
-    //     }
-    // };
 
     const fetchSavedItems = async (afterParam = null) => {
         try {
@@ -57,15 +41,6 @@ export default function SavedPage() {
             console.error(err);
         }
     };
-
-
-
-    // useEffect(() => {
-    //     if (status === "authenticated" && session?.accessToken) {
-    //         setIsInitialLoading(true);
-    //         fetchSavedItems().finally(() => setIsInitialLoading(false));
-    //     }
-    // }, [session, status]);
 
     useEffect(() => {
         if (status !== "authenticated" || !session?.accessToken) return;
@@ -92,12 +67,22 @@ export default function SavedPage() {
 
     return (
         <DashboardLayout>
-            <SavedItemsPanel
-                savedItems={savedItems}
-                loadMore={loadMore}
-                hasMore={hasMore}
-                isLoadingMore={isLoadingMore}
-            />
+            <ShimmerWrapper
+                // loading={commentsLoading}
+                fallbackHeight={600}     // matches ~ h-80 zone
+                baseColor="#3b0764"
+                highlightColor="#c084fc"
+                duration={1400}
+                direction="rtl"
+                lockHeightWhileLoading
+            >
+                <SavedItemsPanel
+                    savedItems={savedItems}
+                    loadMore={loadMore}
+                    hasMore={hasMore}
+                    isLoadingMore={isLoadingMore}
+                />
+            </ShimmerWrapper>
         </DashboardLayout>
     );
 }

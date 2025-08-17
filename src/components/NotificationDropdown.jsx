@@ -103,8 +103,30 @@ const NotificationDropdown = ({ notifications = [], onRefresh }) => {
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -10 }}
                         transition={{ duration: 0.2 }}
-                        className="absolute right-0 mt-2 w-80 bg-[#1f1f25]/95 backdrop-blur-md text-sm text-gray-200 rounded-xl border border-white/10 shadow-xl z-50 max-h-96 overflow-y-auto overflow-x-hidden custom-scrollbar"
+                        className="
+    /* mobile < 728px: center under header */
+    max-[728px]:fixed
+    max-[728px]:left-1/2
+    max-[728px]:-translate-x-1/2
+    max-[728px]:top-[76px]          /* tweak this to match your header height */
+    max-[728px]:w-[92vw]
+    max-[728px]:max-w-sm
+    max-[728px]:z-[60]
+
+    /* desktop ≥ 728px: original behavior */
+    md:absolute
+    md:right-0
+    md:mt-2
+    md:w-80
+
+    bg-[#1f1f25]/95 backdrop-blur-md text-sm text-gray-200
+    rounded-xl border border-white/10 shadow-xl
+    max-h-96 md:max-h-96 max-[728px]:max-h-[70vh]
+    overflow-y-auto overflow-x-hidden custom-scrollbar
+  "
                     >
+
+
                         {/* Header */}
                         <div className="flex items-center justify-between px-3 py-2 border-b border-white/10 text-white font-semibold">
                             <span>Notifications</span>
