@@ -7,6 +7,9 @@ import { motion } from 'framer-motion';
 import { ArrowRight, Play, BarChart3, Shield, TrendingUp, Users, Zap, Eye, Lock, Sparkles } from 'lucide-react';
 import { Loader } from "@/components/loader";
 import FAQSection from "@/components/ui/FAQSection";
+import Link from "next/link";
+import AboutCTA from "@/components/ui/AboutCTA";
+import SlimAboutBanner from "@/components/ui/AboutCTA";
 
 
 
@@ -503,7 +506,12 @@ export default function Index() {
                             style={{ animationDelay: '1s' }}
                             className="absolute bottom-20 right-10 w-5 h-5 bg-indigo-400 rounded-full opacity-30"
                         />
+
+                        {/* faq */}
                         <FAQSection />
+
+                        <SlimAboutBanner />
+
                     </motion.div>
 
                 </>

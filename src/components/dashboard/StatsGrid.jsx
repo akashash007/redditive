@@ -30,7 +30,7 @@ const StatsGrid = ({ userData }) => {
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-      className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-3 md:p-6 shadow-xl"
+      className="rounded-3xl border border-white/10 bg-gradient-to-br from-gray-900/60 via-purple-900/20 to-indigo-900/20 backdrop-blur-xl p-3 md:p-6 shadow-xl"
     >
       <div className="flex items-center justify-between mb-8">
         <h3 className="text-2xl font-bold text-white">Quick Stats</h3>

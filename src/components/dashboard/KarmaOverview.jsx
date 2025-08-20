@@ -286,7 +286,7 @@ const KarmaOverview = ({ userData }) => {
           duration={1400}
           direction="rtl"
         >
-          <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl md:p-8 p-4 shadow-2xl">
+          <div className="rounded-3xl border border-white/10 bg-gradient-to-br from-gray-900/60 via-purple-900/20 to-indigo-900/20 p-4 md:p-8 shadow-2xl backdrop-blur-xl">
             <div className="flex items-center justify-between mb-8">
               <div>
                 <h3 className="text-2xl font-bold text-white mb-2">Karma Overview</h3>
@@ -388,7 +388,7 @@ const KarmaOverview = ({ userData }) => {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
-              className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl md:p-6 p-3 shadow-2xl mt-8 md:mt-4"
+              className="rounded-3xl border border-white/10 bg-gradient-to-br from-gray-900/60 via-purple-900/20 to-indigo-900/20 p-4 md:p-8 shadow-2xl backdrop-blur-xl mt-8 md:mt-4"
             >
               <div className="flex items-center justify-between mb-4">
                 <div>
@@ -414,7 +414,7 @@ const KarmaOverview = ({ userData }) => {
                 </div>
               )}
 
-              <div className="h-56">
+              <div className="h-53">
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={hourlyPerformance} margin={{ top: 8, right: 16, left: 0, bottom: 0 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
@@ -494,7 +494,7 @@ const KarmaOverview = ({ userData }) => {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.12 }}
-            className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl md:p-6 p-3 shadow-2xl mt-8"
+            className="rounded-3xl border border-white/10 bg-gradient-to-br from-gray-900/60 via-purple-900/20 to-indigo-900/20 p-4 md:p-8 shadow-2xl backdrop-blur-xl mt-8"
           >
             <div className="flex items-center justify-between mb-4">
               <div>
@@ -568,7 +568,7 @@ const KarmaOverview = ({ userData }) => {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.14 }}
-            className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl md:p-6 p-3 shadow-2xl mt-0 md:mt-8"
+            className="rounded-3xl border border-white/10 bg-gradient-to-br from-gray-900/60 via-purple-900/20 to-indigo-900/20 p-4 md:p-8 shadow-2xl backdrop-blur-xl mt-0 md:mt-8"
           >
             <div className="flex items-center justify-between mb-4">
               <div>
@@ -630,7 +630,7 @@ const KarmaOverview = ({ userData }) => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
-          className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl md:p-8 p-4 shadow-2xl mt-8"
+          className="rounded-3xl border border-white/10 bg-gradient-to-br from-gray-900/60 via-purple-900/20 to-indigo-900/20 p-4 md:p-8 shadow-2xl backdrop-blur-xl mt-8"
         >
           <div className="flex items-center justify-between mb-8">
             <div>
@@ -687,7 +687,7 @@ const KarmaOverview = ({ userData }) => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5 }}
-          className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-4 md:p-8 shadow-2xl mt-8"
+          className="rounded-3xl border border-white/10 bg-gradient-to-br from-gray-900/60 via-purple-900/20 to-indigo-900/20 p-4 md:p-8 shadow-2xl backdrop-blur-xl mt-8"
         >
           <div className="flex items-center justify-between mb-8">
             <div>
@@ -754,7 +754,7 @@ const KarmaOverview = ({ userData }) => {
         lockHeightWhileLoading
         className={`${commentsLoading && "mt-8"}`}
       >
-        <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-4 md:p-8 shadow-2xl mt-8">
+        <div className="rounded-3xl border border-white/10 bg-gradient-to-br from-gray-900/60 via-purple-900/20 to-indigo-900/20 p-4 md:p-8 shadow-2xl backdrop-blur-xl mt-8">
           <div className="-mx-4 md:mx-0 md:overflow-x-visible overflow-x-auto">
             <div className="min-w-[1024px] md:min-w-0 px-4 md:px-0">
               <div className="h-[260px] md:h-[240px]">

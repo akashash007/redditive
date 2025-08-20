@@ -1,5 +1,6 @@
+// components/UserDropdown.jsx
 import { useState, useRef, useEffect, useCallback } from "react";
-import { Award, LogOut, PenSquare, Settings, Upload } from "lucide-react";
+import { Award, LogOut, PenSquare, Settings, Upload, Info } from "lucide-react";
 import { signOut } from "next-auth/react";
 import ROUTES from "@/config/routeConfig";
 import ConfirmLogoutModal from "./ui/ConfirmLogoutModal";
@@ -37,7 +38,6 @@ const UserDropdown = ({ profile, session, setActiveTab }) => {
     };
 
     const currentPath = router.pathname;
-
     const isActive = (route) => currentPath === route;
 
     return (
@@ -45,56 +45,82 @@ const UserDropdown = ({ profile, session, setActiveTab }) => {
             <img
                 src={avatarSrc}
                 alt="Avatar"
-                className="w-9 h-9 rounded-full object-cover border border-gray-600 cursor-pointer"
+                className="w-9 h-9 rounded-full object-cover border border-white/20 shadow-md cursor-pointer transition hover:border-white/30 hover:scale-[1.02]"
                 onClick={() => setIsOpen((prev) => !prev)}
                 onError={() => setAvatarSrc(fallbackAvatar)}
             />
 
             {isOpen && (
-                <div className="absolute right-0 mt-4 w-40 bg-gray-900/80 backdrop-blur-lg text-sm text-gray-200 rounded-xl border border-white/10 shadow-xl z-50 overflow-hidden">
+                <div
+                    className="absolute right-0 mt-4 w-44 rounded-2xl border border-white/10
+                     bg-[#0b0b14]/90 backdrop-blur-xl text-sm text-gray-200
+                     shadow-2xl z-50 overflow-hidden"
+                >
                     <button
                         onClick={() => navigate(ROUTES.SETTINGS)}
-                        className={`cursor-pointer flex items-center w-full px-4 py-2 text-left transition hover:bg-gray-700/40 ${isActive(ROUTES.SETTINGS)
-                            ? "bg-gradient-to-r from-purple-800/50 to-purple-600/70 font-semibold"
-                            : ""
-                            }`}
+                        className={`cursor-pointer flex items-center w-full px-4 py-2 text-left transition
+                        rounded-t-lg text-white/90 hover:bg-white/10
+                        ${isActive(ROUTES.SETTINGS)
+                                ? "bg-gradient-to-r from-purple-600/30 via-pink-600/30 to-purple-600/30 text-white"
+                                : ""}`}
                     >
                         <Settings className="w-4 h-4 mr-2" />
                         Settings
                     </button>
+
                     <button
                         onClick={() => navigate(ROUTES.SAVED)}
-                        className={`cursor-pointer flex items-center w-full px-4 py-2 text-left transition hover:bg-gray-700/40 ${isActive(ROUTES.SAVED)
-                            ? "bg-gradient-to-r from-purple-800/50 to-purple-600/70 font-semibold"
-                            : ""
-                            }`}
+                        className={`cursor-pointer flex items-center w-full px-4 py-2 text-left transition
+                         text-white/90 hover:bg-white/10
+                        ${isActive(ROUTES.SAVED)
+                                ? "bg-gradient-to-r from-purple-600/30 via-pink-600/30 to-purple-600/30 text-white"
+                                : ""}`}
                     >
                         <Award className="w-4 h-4 mr-2" />
                         Saved Items
                     </button>
+
                     <button
                         onClick={() => navigate(ROUTES.SUBMITTED)}
-                        className={`cursor-pointer flex items-center w-full px-4 py-2 text-left transition hover:bg-gray-700/40 ${isActive(ROUTES.SUBMITTED)
-                            ? "bg-gradient-to-r from-purple-800/50 to-purple-600/70 font-semibold"
-                            : ""
-                            }`}
+                        className={`cursor-pointer flex items-center w-full px-4 py-2 text-left transition
+                         text-white/90 hover:bg-white/10
+                        ${isActive(ROUTES.SUBMITTED)
+                                ? "bg-gradient-to-r from-purple-600/30 via-pink-600/30 to-purple-600/30 text-white"
+                                : ""}`}
                     >
                         <PenSquare className="w-4 h-4 mr-2" />
                         Posts
                     </button>
+
+                    {/* About */}
+                    <button
+                        onClick={() => navigate(ROUTES.ABOUT)}
+                        className={`cursor-pointer flex items-center w-full px-4 py-2 text-left transition
+                         text-white/90 hover:bg-white/10
+                        ${isActive(ROUTES.ABOUT)
+                                ? "bg-gradient-to-r from-purple-600/30 via-pink-600/30 to-purple-600/30 text-white"
+                                : ""}`}
+                    >
+                        <Info className="w-4 h-4 mr-2" />
+                        About
+                    </button>
+
+                    {/* Divider */}
+                    <div className="my-0 h-px bg-white/10" />
+
                     <button
                         onClick={() => {
                             setShowConfirm(true);
                             setIsOpen(false);
                         }}
-                        className="cursor-pointer flex items-center w-full px-4 py-2 text-left transition hover:bg-red-500/20 text-red-400 hover:text-white"
+                        className="cursor-pointer flex items-center w-full px-4 py-2 text-left transition
+                       rounded-b-lg text-red-400 hover:text-white hover:bg-red-500/20"
                     >
                         <LogOut className="w-4 h-4 mr-2" />
                         Logout
                     </button>
                 </div>
             )}
-
 
             <ConfirmLogoutModal
                 isOpen={showConfirm}

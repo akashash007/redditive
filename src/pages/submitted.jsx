@@ -205,6 +205,22 @@ export default function SavedPage() {
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, []);
 
+    const floatA = {
+        animate: {
+            y: [-8, 6, -8],
+            rotate: [-2, 2, -2],
+            transition: { duration: 6.2, delay: 0.15, repeat: Infinity, ease: "easeInOut" },
+        },
+    };
+    const floatB = {
+        animate: {
+            y: [-10, 4, -10],
+            rotate: [2, -2, 2],
+            transition: { duration: 7.8, delay: 0.95, repeat: Infinity, ease: "easeInOut" },
+        },
+    };
+
+
     return (
         <DashboardLayout>
             <ShimmerWrapper
@@ -432,30 +448,124 @@ export default function SavedPage() {
                         </div>
                     )}
 
-                    {/* No results */}
+                    {/* No results (themed) */}
                     {sortedPosts.length === 0 && !loading && !commentsLoading && (
                         <motion.div
                             initial={{ opacity: 0, y: 10, scale: 0.95 }}
                             animate={{ opacity: 1, y: 0, scale: 1 }}
-                            transition={{ duration: 0.3 }}
-                            className="flex flex-col items-center justify-center py-16 px-4 text-center text-sm text-gray-300 bg-white/5 backdrop-blur-md border border-white/10 rounded-xl shadow-md max-w-sm mx-auto mt-16"
+                            transition={{ duration: 0.35 }}
+                            className="relative mx-auto mt-16 max-w-md overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-gray-900/60 via-purple-900/20 to-indigo-900/20 px-6 py-10 text-center text-sm text-gray-300 shadow-xl backdrop-blur-xl"
                         >
-                            <Search size={32} className="mb-3 text-purple-400" />
-                            <p className="text-gray-400">No posts match your filter.</p>
+                            {/* sheen sweep */}
+                            <motion.div
+                                aria-hidden
+                                initial={{ x: "-120%" }}
+                                animate={{ x: "120%" }}
+                                transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+                                className="pointer-events-none absolute inset-y-0 w-1/3 -skew-x-12 bg-gradient-to-r from-transparent via-white/10 to-transparent"
+                            />
+                            {/* floaty glows */}
+                            <motion.div
+                                aria-hidden
+                                animate={{ y: [-10, 8, -10], rotate: [-2, 2, -2] }}
+                                transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
+                                className="pointer-events-none absolute -top-10 -left-10 h-36 w-36 rounded-full bg-purple-500/20 blur-2xl"
+                            />
+                            <motion.div
+                                aria-hidden
+                                animate={{ y: [12, -6, 12], rotate: [2, -2, 2] }}
+                                transition={{ duration: 8, delay: 0.6, repeat: Infinity, ease: "easeInOut" }}
+                                className="pointer-events-none absolute -bottom-12 -right-10 h-40 w-40 rounded-full bg-pink-500/20 blur-2xl"
+                            />
+
+                            {/* icon chip */}
+                            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-tr from-purple-500 via-pink-500 to-indigo-500 ring-4 ring-white/10 shadow-lg">
+                                <Search className="h-5 w-5 text-white" />
+                            </div>
+
+                            {/* title */}
+                            <motion.h3
+                                className="mb-1 text-base font-semibold"
+                                style={{
+                                    backgroundImage:
+                                        "linear-gradient(135deg,#a855f7 0%,#ec4899 30%,#8b5cf6 60%,#3b82f6 100%)",
+                                    backgroundSize: "300% 300%",
+                                    WebkitBackgroundClip: "text",
+                                    color: "transparent",
+                                }}
+                                animate={{ backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"] }}
+                                transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
+                            >
+                                No posts match your filters
+                            </motion.h3>
+
+                            <p className="mb-6 text-gray-400">
+                                Try broadening your search or resetting filters.
+                            </p>
+
+                            {/* actions */}
+                            <div className="flex flex-wrap items-center justify-center gap-3">
+                                <button
+                                    onClick={() => {
+                                        setYearFilter("all");
+                                        setSubredditFilter("all");
+                                        setSortBy("newest");
+                                        setSearchTerm("");
+                                    }}
+                                    className="group relative inline-flex items-center gap-2 rounded-xl
+             bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600
+             px-4 py-2 text-white overflow-hidden isolate"   // ← clip + stacking context
+                                >
+                                    <span className="relative z-10">Reset filters</span>       {/* ← keep text above overlay */}
+
+                                    <span
+                                        className="pointer-events-none absolute inset-0 rounded-xl z-0          // ← behind text
+               bg-gradient-to-r from-purple-400 via-pink-400 to-purple-400
+               opacity-0 transition-opacity duration-300
+               group-hover:opacity-40"                                       // ← subtle, readable
+                                    />
+                                </button>
+
+
+                                {searchTerm && (
+                                    <button
+                                        onClick={() => setSearchTerm("")}
+                                        className="rounded-xl border border-white/15 bg-white/5 px-4 py-2 text-white/90 hover:border-white/30 hover:bg-white/10 transition"
+                                    >
+                                        Clear search
+                                    </button>
+                                )}
+                            </div>
                         </motion.div>
                     )}
 
-                    {/* End of List */}
+                    {/* End of List (themed) */}
                     {!hasMore && sortedPosts.length > 0 && (
                         <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            className="text-center text-purple-400 py-6 text-sm flex flex-col items-center justify-center gap-2 mt-10"
+                            initial={{ opacity: 0, y: 6 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.35 }}
+                            className="relative mt-10 flex flex-col items-center justify-center gap-3 overflow-hidden rounded-2xl   px-6 py-6 text-center text-sm text-purple-200 "
                         >
-                            <PartyPopper size={28} className="text-purple-500" />
-                            <span className="text-sm">You've reached the end of the saved posts.</span>
+
+                            {/* icon chip */}
+                            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-tr from-purple-500 via-pink-500 to-indigo-500 ring-4 ring-white/10 shadow">
+                                <PartyPopper className="h-5 w-5 text-white" />
+                            </div>
+
+                            <span className="text-sm text-purple-200">
+                                You’ve reached the end of the saved posts.
+                            </span>
+
+                            <button
+                                onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+                                className="rounded-xl border border-white/15 bg-white/5 px-3 py-1.5 text-xs text-white/90 hover:border-white/30 hover:bg-white/10 transition"
+                            >
+                                Back to top
+                            </button>
                         </motion.div>
                     )}
+
                 </div>
             </ShimmerWrapper>
         </DashboardLayout>

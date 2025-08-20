@@ -9,6 +9,7 @@ const ROUTES = {
     SUBMITTED: "/submitted",
     PRIVACY: "/privacy",
     TERMS: "/terms",
+    ABOUT: "/about",
 };
 
 export default ROUTES;

@@ -4,8 +4,10 @@ import {
     MessageCircle,
     ExternalLink,
     Clock,
-    Trash2, // 👈 new
+    Trash2,
+    Sparkles,
 } from "lucide-react";
+import { motion } from "framer-motion";
 
 export default function RedditPostCard({ post }) {
     if (!post) return null;
@@ -22,13 +24,12 @@ export default function RedditPostCard({ post }) {
         media_metadata,
         gallery_data,
         link_flair_text,
-        removed_by_category,         // 👈 read removal category
+        removed_by_category,
         mod_reason_title,
         mod_reason_by,
         removal_reason,
     } = post;
 
-    // Friendly label for the tooltip
     const removalLabels = {
         moderator: "Removed by moderators",
         author: "Removed by author",
@@ -46,7 +47,6 @@ export default function RedditPostCard({ post }) {
         .join(" • ");
     const removalTooltip = [baseRemoval, extraBits].filter(Boolean).join(" — ");
 
-    // safe access to media
     const images = gallery_data?.items?.map((item) => {
         const media = media_metadata?.[item.media_id];
         return media?.s?.u?.replace(/&amp;/g, "&");
@@ -56,32 +56,40 @@ export default function RedditPostCard({ post }) {
     const showRemovalBadge = Boolean(removed_by_category);
 
     return (
-        <div className="relative bg-gray-800/40 border border-white/10 bg-opacity-10 backdrop-blur-md rounded-xl overflow-hidden shadow-md transition-transform duration-300 hover:scale-[1.01] hover:shadow-lg text-white">
-            {/* Removal badge + tooltip */}
+        <motion.div
+            whileHover={{ y: -2 }}
+            className="relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-gray-900/50 via-purple-900/20 to-indigo-900/20 text-white shadow-lg backdrop-blur-xl"
+        >
+            {/* sheen */}
+            {/* <motion.div
+                aria-hidden
+                initial={{ x: "-120%" }}
+                animate={{ x: "120%" }}
+                transition={{ duration: 9, repeat: Infinity, ease: "linear" }}
+                className="pointer-events-none absolute inset-y-0 w-1/3 -skew-x-12 bg-gradient-to-r from-transparent via-white/10 to-transparent"
+            /> */}
+
+            {/* removal badge */}
             {showRemovalBadge && (
-                <div className="group absolute top-2 right-2 z-10">
+                <div className="group absolute right-2 top-2 z-10">
                     <div
-                        className="rounded-full bg-red-600/90 text-white p-1.5 shadow-sm cursor-help"
+                        className="rounded-full bg-red-600/90 p-1.5 text-white shadow-sm ring-2 ring-red-400/30 cursor-help"
                         title={removalTooltip || "Removed"}
                         aria-label={removalTooltip || "Removed"}
                     >
-                        <Trash2 className="w-3 h-3" />
+                        <Trash2 className="h-3 w-3" />
                     </div>
-                    {/* Tooltip */}
                     {removalTooltip && (
-                        <div className="absolute right-0 mt-2 w-max max-w-[16rem] px-2 py-1 text-xs text-white bg-black/80 border border-white/10 rounded shadow opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity">
+                        <div className="pointer-events-none absolute right-0 mt-2 max-w-[16rem] w-max rounded border border-white/10 bg-black/80 px-2 py-1 text-xs text-white opacity-0 shadow transition-opacity group-hover:opacity-100">
                             {removalTooltip}
                         </div>
                     )}
                 </div>
             )}
 
-            {/* Header (add right padding when badge exists to avoid overlap) */}
-            <div
-                className={`flex justify-between items-center px-4 pt-4 text-xs text-gray-400 ${showRemovalBadge ? "pr-12" : ""
-                    }`}
-            >
-                <div className="flex gap-2">
+            {/* header */}
+            <div className={`flex items-center justify-between px-4 pt-4 text-xs text-gray-400 ${showRemovalBadge ? "pr-12" : ""}`}>
+                <div className="flex items-center gap-2">
                     <span className="font-semibold text-purple-300">{subreddit_name_prefixed}</span>
                     <span>•</span>
                     <span>u/{author}</span>
@@ -92,61 +100,78 @@ export default function RedditPostCard({ post }) {
                 </span>
             </div>
 
-            {/* Title & Flair */}
+            {/* title + flair */}
             <div className="px-4 py-2">
-                <h2 className="text-base font-semibold text-white mb-1">{title}</h2>
-                {link_flair_text && (
-                    <span className="inline-block bg-purple-700 bg-opacity-30 text-purple-300 text-xs px-2 py-1 rounded-full backdrop-blur-sm mb-2">
-                        {link_flair_text}
-                    </span>
-                )}
+                <h2
+                    className="mb-1 text-base font-normal text-white"
+                // style={{
+                //     backgroundImage:
+                //         "linear-gradient(135deg,#a855f7 0%,#ec4899 30%,#8b5cf6 60%,#3b82f6 100%)",
+                //     backgroundSize: "300% 300%",
+                //     WebkitBackgroundClip: "text",
+                //     color: "transparent",
+                // }}
+                >
+                    {title}
+                </h2>
+                <div className="flex flex-wrap items-center gap-2">
+                    {link_flair_text && (
+                        <span className="inline-flex items-center gap-1 rounded-full border border-purple-500/20 bg-white/5 px-2 py-1 text-xs text-purple-200 backdrop-blur-sm">
+                            <Sparkles className="h-3.5 w-3.5" />
+                            {link_flair_text}
+                        </span>
+                    )}
+                </div>
             </div>
 
-            {/* Selftext */}
+            {/* body */}
             {selftext && (
                 <p className="px-4 pb-2 text-sm text-gray-300">
-                    {selftext.length > 300 ? selftext.slice(0, 300) + "..." : selftext}
+                    {selftext.length > 300 ? selftext.slice(0, 300) + "…" : selftext}
                 </p>
             )}
 
-            {/* Images */}
+            {/* images */}
             {images && images.length > 0 && (
                 <div className="grid grid-cols-2 gap-2 px-4 pb-2">
                     {images.map((url, idx) =>
                         url ? (
-                            <img
+                            <motion.img
                                 key={idx}
                                 src={url}
                                 alt={`media-${idx}`}
                                 loading="lazy"
-                                className="rounded-md object-cover w-full h-44 hover:brightness-110 transition"
+                                className="h-44 w-full rounded-md object-cover"
+                                whileHover={{ scale: 1.02 }}
+                                transition={{ type: "spring", stiffness: 200, damping: 20 }}
                             />
                         ) : null
                     )}
                 </div>
             )}
 
-            {/* Footer */}
-            <div className="flex justify-between items-center px-4 py-3 bg-gray-800 bg-opacity-40 backdrop-blur-sm text-sm text-gray-300 border-t border-gray-700">
+            {/* footer */}
+            <div className="flex items-center justify-between border-t border-white/10 bg-white/5 px-4 py-3 text-sm text-gray-300 backdrop-blur-sm">
                 <a
                     href={`https://reddit.com${permalink}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-1 text-blue-400 hover:text-blue-300"
+                    className="group inline-flex items-center gap-1 text-blue-300 transition hover:text-blue-200"
                 >
-                    <ExternalLink size={16} /> Reddit
+                    <ExternalLink size={16} />
+                    <span className="underline-offset-2 group-hover:underline">Reddit</span>
                 </a>
-                <div className="flex items-center space-x-4 text-sm">
-                    <div className="flex items-center gap-1 hover:text-orange-400 transition">
+                <div className="flex items-center space-x-4">
+                    <div className="flex items-center gap-1 transition hover:text-orange-300">
                         <ArrowBigUp size={16} />
                         {ups}
                     </div>
-                    <div className="flex items-center gap-1 hover:text-cyan-300 transition">
+                    <div className="flex items-center gap-1 transition hover:text-cyan-200">
                         <MessageCircle size={16} />
                         {num_comments}
                     </div>
                 </div>
             </div>
-        </div>
+        </motion.div>
     );
 }

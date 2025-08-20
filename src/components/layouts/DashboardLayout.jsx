@@ -8,6 +8,8 @@ import { fetchFromEndpoint } from "@/services/redditApi";
 import ROUTES from "@/config/routeConfig";
 import { User, BarChart2 } from "lucide-react";
 import { useNotify } from "@/utils/NotificationContext";
+import { Coffee } from "lucide-react";
+import CoffeeButton from "../ui/CoffeeButton";
 
 export default function DashboardLayout({ children }) {
     const { data: session, status } = useSession();
@@ -68,22 +70,6 @@ export default function DashboardLayout({ children }) {
         { id: "analytics", label: "Analytics", icon: BarChart2 },
     ];
 
-    // return (
-    //     <main className="relative min-h-screen w-full overflow-hidden">
-    //         <FloatingBackground particleCount={25} />
-    //         <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900/30 to-indigo-900/40 flex items-start justify-center relative overflow-hidden pt-20 px-6">
-    //             <Menu
-    //                 tabs={tabs}
-    //                 profile={profile}
-    //                 session={session}
-    //                 setActiveTab={() => { }}
-    //                 notifications={notifications}
-    //             />
-    //             <div className="w-full max-w-7xl mx-auto my-8">{children}</div>
-    //         </div>
-    //     </main>
-    // );
-
     return (
         <main className="relative min-h-screen w-full overflow-hidden">
             {/* Fixed background */}
@@ -103,6 +89,10 @@ export default function DashboardLayout({ children }) {
                 />
                 <div className="w-full max-w-7xl mx-auto my-8">{children}</div>
             </div>
+
+            {/* Floating Buy Me a Coffee Button */}
+            <CoffeeButton />
+
         </main>
     );
 
