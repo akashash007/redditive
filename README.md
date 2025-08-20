@@ -1,36 +1,86 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+📊 Reddtive — Reddit User Analyzer
 
-## Getting Started
+Reddtive is a Next.js web application that lets you explore and analyze your Reddit activity in a fun and visual way.
+From interactive heatmaps to saved item organization, Reddtive provides a modern dashboard to understand your Reddit habits.
 
-First, run the development server:
+✨ Features
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+🏠 Landing Page
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Clean & modern design with glassmorphism.
+Quick CTA to log in with Reddit.
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+🔐 Login Page
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Secure authentication via Reddit OAuth.
+No passwords are stored or asked — we only read Reddit data.
 
-## Learn More
+📊 Dashboard (after authentication)
 
-To learn more about Next.js, take a look at the following resources:
+Overview → Highlights of user activity.
+Subscribed Communities → Visual chart of top subreddits.
+Quick Stats → User details like karma, account age, trophies.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+📈 Analytics Page
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Contains 8+ modern charts & graphs, built using Recharts + Framer Motion animations.
+Subreddit comment distribution.
+Karma by subreddit.
+Activity over time.
+Custom-built GitHub-style heatmap (fully responsive, advanced drilldown popup on click).
+Word cloud of most used words.
+Controversial comments detector.
+Trophy timeline.
+More detailed graphs to explore user activity patterns.
 
-## Deploy on Vercel
+⚙️ Settings Page
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Toggle what features are enabled.
+Manage personalization options.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+💾 Saved Items Page
+
+Shows saved posts (t3) and comments (t1).
+Advanced filters (by subreddit, type, keywords).
+Thumbnail previews for posts.
+
+📝 Submitted Posts Page
+
+Displays user’s submitted posts.
+Advanced filters to sort & search.
+Infinite scroll with lazy loading.
+
+👤 About Page
+
+Information about the developer (Akash S.) and the project.
+“Buy Me a Coffee” ☕ support link.
+
+🚪 Logout
+
+Logout option appears inside profile dropdown.
+Confirmation modal before logging out.
+
+🔔 Notifications System
+
+Custom-built stacked notifications (inspired by Sonner, but fully made from scratch).
+Minimal design → expands on hover.
+Advanced notifications panel in menu bar:
+Shows all past notifications with detailed data.
+
+🛠️ Tech Stack
+
+Framework: Next.js
+Styling: Tailwind CSS + glassmorphism
+Animations: Framer Motion
+Auth: NextAuth.js (Reddit provider)
+Charts: Recharts + Custom-built Heatmap
+Notifications: Own custom React notification system
+Deployment: Vercel (fully serverless, responsive)
+
+🎯 Motive
+
+This project is built as a fun personal project:
+No user credentials are stored.
+No passwords are collected.
+We only read public Reddit data with user’s consent.
+Main aim → learn, build, and showcase advanced frontend + data visualization skills.
