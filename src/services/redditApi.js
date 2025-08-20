@@ -2,8 +2,8 @@
 import axios from "axios";
 import { BASE_URLS, ENDPOINTS } from "./endpoint";
 import { signOut } from "next-auth/react";
-import { Router } from "next/router";
-
+// import { Router } from "next/router";
+import { useRouter } from "next/navigation";
 /**
  * Generic GET request using endpoint key from ENDPOINTS config
  * @param {string} key - Key name from ENDPOINTS object (e.g., 'getUserProfile')
@@ -43,6 +43,7 @@ import { Router } from "next/router";
 
 export const fetchFromEndpoint = async (key, token, params = {}) => {
     const endpoint = ENDPOINTS[key];
+
     if (!endpoint) {
         throw new Error(`Endpoint key "${key}" is not defined.`);
     }
@@ -70,8 +71,10 @@ export const fetchFromEndpoint = async (key, token, params = {}) => {
             console.warn(`⚠️ Authorization/server error (${status}) — Logging out...`);
 
             // NextAuth signOut will redirect to login page
-            await signOut({ redirect: false });
-            Router.push("/login");
+            // await signOut({ redirect: false });
+            // Router.push("/login");
+            await signOut({ callbackUrl: "/login" });
+
             return;
         }
 

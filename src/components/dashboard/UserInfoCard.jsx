@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { motion } from "framer-motion";
 import { Calendar, Mail, Shield, Star } from "lucide-react";
 import { fetchFromEndpoint } from "@/services/redditApi";
@@ -12,54 +12,84 @@ const UserInfoCard = ({ userData }) => {
   const { data: session, status } = useSession();
   const [trophies, setTrophies] = useState([]);
   const [subscribedSubs, setSubscribedSubs] = useState([]);
-  const [subsLoading, setSubsLoading] = useState(false);
+  const [subsLoading, setSubsLoading] = useState(true);     // start with shimmer ON
+
+  const accessToken = session?.accessToken;
+  const username = session?.user?.name;
+  const hasFetchedSubsRef = useRef(null);
+  const hasFetchedTrophiesRef = useRef(null);
 
   const createdDate = new Date(userData.created * 1000).toLocaleDateString();
   const bannerUrl = userData?.subreddit?.banner_img?.replace(/&amp;/g, "&");
 
-  // Trophies
+  // Trophies (once per token)
   useEffect(() => {
     const fetchTrophies = async () => {
-      if (!session?.accessToken || !session?.user?.name) return;
+      if (!accessToken || !username) return;
+      if (hasFetchedTrophiesRef.current === accessToken) return;
       try {
-        const res = await fetchFromEndpoint(
-          "getTrophies",
-          session.accessToken,
-          session.user.name
-        );
+        const res = await fetchFromEndpoint("getTrophies", accessToken, username);
         const flatTrophies = res?.data?.trophies?.map((t) => t.data) || [];
         setTrophies(flatTrophies);
+        hasFetchedTrophiesRef.current = accessToken;
       } catch (err) {
         console.error("Failed to fetch trophies", err);
       }
     };
     if (status === "authenticated") fetchTrophies();
-  }, [session, status]);
+  }, [status, accessToken, username]);
 
-  // Subscribed Communities (fetch in parent)
+  // Subscribed Communities (once per token, query string token to match your API)
   useEffect(() => {
+    // keep shimmer while NextAuth is resolving
+    if (status === "loading") {
+      setSubsLoading(true);
+      return;
+    }
+
     const fetchSubscribedSubs = async () => {
-      if (!session?.accessToken) return;
+      if (!accessToken) {
+        setSubscribedSubs([]);
+        setSubsLoading(false);
+        return;
+      }
+      if (hasFetchedSubsRef.current === accessToken) {
+        setSubsLoading(false);
+        return;
+      }
+
       setSubsLoading(true);
       try {
         const res = await fetch(
-          `/api/reddit/subscriber?accessToken=${session.accessToken}`
+          `/api/reddit/subscriber?accessToken=${encodeURIComponent(accessToken)}`
         );
         const json = await res.json();
-        const subs = json?.data?.children?.map((s) => s.data) || [];
-        setSubscribedSubs(subs);
+
+        if (!res.ok) {
+          console.error("Subscribed subs request failed:", json?.error || res.status);
+          setSubscribedSubs([]); // avoid showing raw error text in UI
+        } else {
+          const subs = json?.data?.children?.map((s) => s.data) || [];
+          setSubscribedSubs(subs);
+          hasFetchedSubsRef.current = accessToken; // mark fetched for this token
+        }
       } catch (err) {
         console.error("Failed to fetch subscribed subreddits", err);
+        setSubscribedSubs([]);
       } finally {
-        setSubsLoading(false);
+        setSubsLoading(false); // turn off shimmer
       }
     };
+
     if (status === "authenticated") fetchSubscribedSubs();
-  }, [session, status]);
+    if (status === "unauthenticated") {
+      setSubscribedSubs([]);
+      setSubsLoading(false);
+    }
+  }, [status, accessToken]);
 
   return (
     <div className="relative">
-      {/* Desktop/Tablet trophies in the corner */}
       {trophies?.length > 0 && (
         <div className="hidden md:flex absolute top-2 right-2 z-20 flex-wrap gap-2">
           {trophies.map((trophy, idx) => (
@@ -74,7 +104,6 @@ const UserInfoCard = ({ userData }) => {
       )}
 
       <ShimmerWrapper
-        // You can leave this one uncontrolled if you just want the quick entrance shimmer
         fallbackHeight="250px"
         baseColor="#3b0764"
         highlightColor="#c084fc"
@@ -135,20 +164,6 @@ const UserInfoCard = ({ userData }) => {
               </div>
             </div>
 
-            {/* Mobile trophies row */}
-            {trophies?.length > 0 && (
-              <div className="md:hidden mb-3">
-                <div className="flex gap-3 overflow-x-auto py-2 no-scrollbar">
-                  {trophies.map((trophy, idx) => (
-                    <div key={idx} className="flex-shrink-0 flex items-center gap-2 bg-white/5 border border-white/10 rounded-full px-2.5 py-1">
-                      <img src={trophy.icon_70} alt={trophy.name} className="w-5 h-5" />
-                      <span className="text-xs text-gray-200 truncate max-w-[140px]">{trophy.name}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
             {/* Meta chips */}
             <div className="flex flex-wrap items-center justify-start gap-2 text-sm text-gray-400">
               <WithIcon icon={<Calendar className="w-4 h-4" />} label={`Joined ${createdDate}`} />
@@ -166,7 +181,6 @@ const UserInfoCard = ({ userData }) => {
         </motion.div>
       </ShimmerWrapper>
 
-      {/* Subscribed Communities (shimmer controlled by real loading flag) */}
       <div className="mt-4 md:mt-6">
         <SubscribedCommunities subscribedSubs={subscribedSubs} loading={subsLoading} />
       </div>

@@ -8,12 +8,13 @@ import ShimmerWrapper from "@/components/ui/ShimmerWrapper";
 
 export default function SavedPage() {
     const { data: session, status } = useSession();
+
     const [posts, setPosts] = useState([]);
     const [after, setAfter] = useState(null);
     const [loading, setLoading] = useState(false);
     const [hasMore, setHasMore] = useState(true);
 
-    // Filters
+    // UI state
     const [searchTerm, setSearchTerm] = useState("");
     const [yearFilter, setYearFilter] = useState("all");
     const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -22,15 +23,23 @@ export default function SavedPage() {
     const [subredditFilter, setSubredditFilter] = useState("all");
     const [subredditList, setSubredditList] = useState([]);
     const [expandedPosts, setExpandedPosts] = useState({});
-
     const [sortOpen, setSortOpen] = useState(false);
     const [subredditOpen, setSubredditOpen] = useState(false);
 
-    const [commentsLoading, setcommentsLoading] = useState(false)
+    // Shimmer for initial/processing
+    const [commentsLoading, setcommentsLoading] = useState(true);
 
     const yearRef = useRef(null);
     const subredditRef = useRef(null);
     const sortRef = useRef(null);
+
+    // Stable primitives from session
+    const accessToken = session?.accessToken;
+    const username = session?.user?.name;
+
+    // Guards: avoid re-fetch on tab focus & avoid overlap
+    const fetchedFirstPageKeyRef = useRef(null); // `${token}:${username}`
+    const inFlightRef = useRef(false);
 
     const filtersActive =
         yearFilter !== "all" ||
@@ -38,65 +47,114 @@ export default function SavedPage() {
         subredditFilter !== "all" ||
         searchTerm.trim() !== "";
 
-    // Fetch saved posts
-    const fetchPosts = async (loadMore = false) => {
-        if (!session?.accessToken || !session?.user?.name || loading || !hasMore) return;
+    // Reset feed if token/username actually changes
+    useEffect(() => {
+        if (!accessToken || !username) {
+            setPosts([]);
+            setAfter(null);
+            setHasMore(true);
+            fetchedFirstPageKeyRef.current = null;
+            return;
+        }
+        const key = `${accessToken}:${username}`;
+        if (fetchedFirstPageKeyRef.current && fetchedFirstPageKeyRef.current !== key) {
+            // New identity: reset list so we fetch fresh for the new user/token
+            setPosts([]);
+            setAfter(null);
+            setHasMore(true);
+            fetchedFirstPageKeyRef.current = null;
+        }
+    }, [accessToken, username]);
 
+    // Core fetcher (first page or pagination)
+    const fetchPosts = async (loadMore = false) => {
+        if (!accessToken || !username) return;
+        if (inFlightRef.current) return;
+
+        // If it's the initial page and we already fetched for this token+username, skip
+        const key = `${accessToken}:${username}`;
+        if (!loadMore && fetchedFirstPageKeyRef.current === key) return;
+
+        if (!loadMore && !after) {
+            // initial page shimmer
+            setcommentsLoading(true);
+        }
         setLoading(true);
-        setcommentsLoading(true)
+        inFlightRef.current = true;
+
         try {
-            // const commentsLoading = true
-            const res = await fetch(
-                `/api/reddit/submitted?username=${session.user.name}&accessToken=${session.accessToken}${loadMore && after ? `&after=${after}` : ""}`
-            );
+            const url = `/api/reddit/submitted?username=${encodeURIComponent(
+                username
+            )}&accessToken=${encodeURIComponent(accessToken)}${loadMore && after ? `&after=${encodeURIComponent(after)}` : ""
+                }`;
+
+            const res = await fetch(url);
             const json = await res.json();
+
             const children = json?.data?.children || [];
             const newPosts = children.map((c) => c.data);
 
             setPosts((prev) => {
                 const existingIds = new Set(prev.map((p) => p.id));
                 const filtered = newPosts.filter((p) => !existingIds.has(p.id));
-                return [...prev, ...filtered];
+                return loadMore ? [...prev, ...filtered] : [...filtered, ...prev]; // preserve order nicely
             });
 
-            // Add subreddits to list
-            const allSubs = new Set([...subredditList]);
-            newPosts.forEach((p) => allSubs.add(p.subreddit_name_prefixed));
-            setSubredditList(Array.from(allSubs));
+            // Build subreddit filter list
+            setSubredditList((prev) => {
+                const all = new Set(prev);
+                newPosts.forEach((p) => all.add(p.subreddit_name_prefixed));
+                return Array.from(all);
+            });
 
             const newAfter = json?.data?.after;
             if (!newAfter || children.length === 0) setHasMore(false);
             else setAfter(newAfter);
-        } catch (err) {
-            setcommentsLoading(false)
-            console.error("Failed to fetch posts", err);
-        }
-        setLoading(false);
-        setcommentsLoading(false)
 
+            // mark initial page fetched for this token+username
+            if (!loadMore) fetchedFirstPageKeyRef.current = key;
+        } catch (err) {
+            console.error("Failed to fetch posts", err);
+            // keep hasMore as-is so user can retry by scrolling if needed
+        } finally {
+            setLoading(false);
+            setcommentsLoading(false);
+            inFlightRef.current = false;
+        }
     };
 
+    // Initial fetch — run once per token+username (not on tab focus)
     useEffect(() => {
-        if (status === "authenticated") fetchPosts();
-    }, [session, status]);
+        if (status === "loading") {
+            setcommentsLoading(true);
+            return;
+        }
+        if (status === "authenticated" && accessToken && username) {
+            fetchPosts(false);
+        } else if (status === "unauthenticated") {
+            setcommentsLoading(false);
+        }
+    }, [status, accessToken, username]); // stable deps (not whole session object)
 
+    // Infinite scroll
     useEffect(() => {
         const handleScroll = () => {
             if (
                 window.innerHeight + document.documentElement.scrollTop >=
                 document.documentElement.offsetHeight - 100 &&
-                !loading
+                !loading &&
+                hasMore
             ) {
                 fetchPosts(true);
             }
         };
         window.addEventListener("scroll", handleScroll);
         return () => window.removeEventListener("scroll", handleScroll);
-    }, [after, loading]);
+    }, [after, loading, hasMore]); // track hasMore to stop extra calls
 
     // Build dynamic year filter options
     useEffect(() => {
-        const createdDateStr = localStorage.getItem("createdDate");
+        const createdDateStr = typeof window !== "undefined" && localStorage.getItem("createdDate");
         if (!createdDateStr) return;
 
         const parts = createdDateStr.split("/");
@@ -116,7 +174,8 @@ export default function SavedPage() {
         const date = new Date(post.created_utc * 1000);
         const year = date.getFullYear().toString();
         const matchesYear = yearFilter === "all" || year === yearFilter;
-        const matchesSubreddit = subredditFilter === "all" || post.subreddit_name_prefixed === subredditFilter;
+        const matchesSubreddit =
+            subredditFilter === "all" || post.subreddit_name_prefixed === subredditFilter;
 
         const searchLower = searchTerm.toLowerCase();
         const matchesSearch =
@@ -135,32 +194,22 @@ export default function SavedPage() {
         return b.created_utc - a.created_utc;
     });
 
+    // Close dropdowns on outside click
     useEffect(() => {
         const handleClickOutside = (e) => {
-            if (
-                yearRef.current && !yearRef.current.contains(e.target)
-            ) setDropdownOpen(false);
-
-            if (
-                subredditRef.current && !subredditRef.current.contains(e.target)
-            ) setSubredditOpen(false);
-
-            if (
-                sortRef.current && !sortRef.current.contains(e.target)
-            ) setSortOpen(false);
+            if (yearRef.current && !yearRef.current.contains(e.target)) setDropdownOpen(false);
+            if (subredditRef.current && !subredditRef.current.contains(e.target)) setSubredditOpen(false);
+            if (sortRef.current && !sortRef.current.contains(e.target)) setSortOpen(false);
         };
-
         document.addEventListener("mousedown", handleClickOutside);
-        return () => {
-            document.removeEventListener("mousedown", handleClickOutside);
-        };
+        return () => document.removeEventListener("mousedown", handleClickOutside);
     }, []);
 
     return (
         <DashboardLayout>
             <ShimmerWrapper
                 loading={commentsLoading}
-                fallbackHeight={600}     // matches ~ h-80 zone
+                fallbackHeight={600}
                 baseColor="#3b0764"
                 highlightColor="#c084fc"
                 duration={1400}
@@ -168,7 +217,6 @@ export default function SavedPage() {
                 lockHeightWhileLoading
             >
                 <div className="px-1">
-
                     {/* Filters */}
                     <div className="flex flex-wrap justify-between items-center gap-4 mb-6">
                         {/* LEFT SIDE – Dropdown filters */}
@@ -180,10 +228,7 @@ export default function SavedPage() {
                                     className="flex items-center justify-between gap-2 text-sm text-gray-100 bg-gradient-to-r from-purple-500 to-blue-500 border border-white/10 rounded-full px-4 py-2 focus:outline-none hover:bg-gray-800/40 transition-all shadow-sm"
                                 >
                                     {yearOptions.find((o) => o.value === yearFilter)?.label || "All Years"}
-                                    <motion.div
-                                        animate={{ rotate: dropdownOpen ? 180 : 0 }}
-                                        transition={{ duration: 0.2 }}
-                                    >
+                                    <motion.div animate={{ rotate: dropdownOpen ? 180 : 0 }} transition={{ duration: 0.2 }}>
                                         <ChevronDown size={14} />
                                     </motion.div>
                                 </button>
@@ -225,10 +270,7 @@ export default function SavedPage() {
                                         className="flex items-center justify-between gap-2 text-sm text-gray-100 bg-gradient-to-r from-purple-500 to-blue-500 border border-white/10 rounded-full px-4 py-2 hover:bg-gray-800/40 transition-all shadow-sm"
                                     >
                                         {subredditFilter === "all" ? "All Subreddits" : subredditFilter}
-                                        <motion.div
-                                            animate={{ rotate: subredditOpen ? 180 : 0 }}
-                                            transition={{ duration: 0.2 }}
-                                        >
+                                        <motion.div animate={{ rotate: subredditOpen ? 180 : 0 }} transition={{ duration: 0.2 }}>
                                             <ChevronDown size={14} />
                                         </motion.div>
                                     </button>
@@ -248,7 +290,7 @@ export default function SavedPage() {
                                                         setSubredditFilter("all");
                                                         setSubredditOpen(false);
                                                     }}
-                                                    className="block w-full text-left px-4 py-2 text-sm text-gray-200 hover:bg-white/10 transition"
+                                                    className="block w-full text-left px-4 py-2 text-sm text-gray-200 hover:bg:white/10 transition"
                                                 >
                                                     All Subreddits
                                                 </motion.button>
@@ -281,16 +323,17 @@ export default function SavedPage() {
                                 >
                                     {(() => {
                                         switch (sortBy) {
-                                            case "oldest": return "Oldest";
-                                            case "upvotes": return "Most Upvoted";
-                                            case "comments": return "Most Commented";
-                                            default: return "Newest";
+                                            case "oldest":
+                                                return "Oldest";
+                                            case "upvotes":
+                                                return "Most Upvoted";
+                                            case "comments":
+                                                return "Most Commented";
+                                            default:
+                                                return "Newest";
                                         }
                                     })()}
-                                    <motion.div
-                                        animate={{ rotate: sortOpen ? 180 : 0 }}
-                                        transition={{ duration: 0.2 }}
-                                    >
+                                    <motion.div animate={{ rotate: sortOpen ? 180 : 0 }} transition={{ duration: 0.2 }}>
                                         <ChevronDown size={14} />
                                     </motion.div>
                                 </button>
@@ -337,13 +380,12 @@ export default function SavedPage() {
                                         setSortBy("newest");
                                         setSearchTerm("");
                                     }}
-                                    className="w-8 h-8 flex items-center justify-center rounded-full bg-white/5 text-gray-300 border border-white/10 hover:bg-white/10 backdrop-blur-md transition"
+                                    className="w-8 h-8 flex items-center justify-center rounded-full bg:white/5 text-gray-300 border border-white/10 hover:bg-white/10 backdrop-blur-md transition"
                                     title="Clear Filters"
                                 >
                                     <X className="w-4 h-4" />
                                 </button>
                             )}
-
                         </div>
 
                         {/* RIGHT SIDE – Search */}
@@ -358,7 +400,6 @@ export default function SavedPage() {
                             />
                         </div>
                     </div>
-
 
                     {/* Posts Grid */}
                     <div className="columns-1 md:columns-2 gap-6 space-y-6">
@@ -392,7 +433,7 @@ export default function SavedPage() {
                     )}
 
                     {/* No results */}
-                    {sortedPosts.length === 0 && !loading && (
+                    {sortedPosts.length === 0 && !loading && !commentsLoading && (
                         <motion.div
                             initial={{ opacity: 0, y: 10, scale: 0.95 }}
                             animate={{ opacity: 1, y: 0, scale: 1 }}

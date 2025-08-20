@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import {
   Settings, Eye, Filter, Bell, Globe,
-  ToggleLeft as Toggle, Shield, Save
+  ToggleLeft as Toggle, Shield
 } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import axios from 'axios';
@@ -57,94 +57,103 @@ const UserSettings = ({ userData, setActiveTab }) => {
   };
 
   return (
+    // Outer container now only fades (no directional slide)
     <motion.div
       key="settings"
-      initial={{ opacity: 0, x: 100 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: -100 }}
-      transition={{ duration: 0.5 }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.35 }}
       className="w-full h-full grid grid-cols-1 lg:grid-cols-2 gap-6 items-start"
     >
-      {/* Left side: Settings content (2/3 of width) */}
-      <ShimmerWrapper
-        // loading={commentsLoading}
-        fallbackHeight={500}     // matches ~ h-80 zone
-        baseColor="#3b0764"
-        highlightColor="#c084fc"
-        duration={1400}
-        direction="rtl"
-        lockHeightWhileLoading
+      {/* Left side: Settings content (slides in from LEFT) */}
+      <motion.div
+        initial={{ opacity: 0, x: -80 }}
+        animate={{ opacity: 1, x: 0 }}
+        exit={{ opacity: 0, x: -80 }}
+        transition={{ duration: 0.5 }}
       >
-        <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl px-4 md:px-8 md:py-10 py-5 shadow-xl">
-          {/* Header */}
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h3 className="text-2xl font-bold text-white mb-2">Settings</h3>
-              <p className="text-gray-400">Manage your Reddit preference</p>
+        <ShimmerWrapper
+          // loading={commentsLoading}
+          fallbackHeight={500}
+          baseColor="#3b0764"
+          highlightColor="#c084fc"
+          duration={1400}
+          direction="rtl"
+          lockHeightWhileLoading
+        >
+          <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl px-4 md:px-8 md:py-10 py-5 shadow-xl">
+            {/* Header */}
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h3 className="text-2xl font-bold text-white mb-2">Settings</h3>
+                <p className="text-gray-400">Manage your Reddit preference</p>
+              </div>
+              <div className="bg-gradient-to-r from-green-500 to-blue-500 p-3 rounded-xl">
+                <Settings className="w-6 h-6 text-white" />
+              </div>
             </div>
-            <motion.div
-              // whileHover={{ scale: 1.05, rotate: 10 }}
-              className="bg-gradient-to-r from-green-500 to-blue-500 p-3 rounded-xl"
-            >
-              <Settings className="w-6 h-6 text-white" />
-            </motion.div>
-          </div>
 
-
-          {/* Settings Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-4">
-            {settingsItems.map((item) => {
-              const Icon = item.icon;
-              const isEnabled = settings[item.key];
-              return (
-                <motion.div
-                  key={item.key}
-                  whileHover={{ scale: 1.01 }}
-                  className="bg-gray-900/60 border border-gray-700/40 rounded-2xl p-2 flex items-center justify-between transition-all duration-300"
-                >
-                  <div className="flex items-center space-x-4">
-                    <div className={`w-12 h-12 bg-gradient-to-r ${colorClasses[item.color]} rounded-xl flex items-center justify-center`}>
-                      <Icon className="w-6 h-6 text-white" />
-                    </div>
-                    <div>
-                      <h4 className="text-white font-semibold text-lg">{item.label}</h4>
-                      <p className="text-sm text-gray-400">{item.description}</p>
-                    </div>
-                  </div>
-                  {/* Toggle Switch */}
-                  <motion.button
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => handleToggle(item.key)}
-                    className={`relative w-14 h-8 rounded-full transition duration-300 ${isEnabled
-                      ? `bg-gradient-to-r ${colorClasses[item.color]}`
-                      : 'bg-gray-600'
-                      }`}
+            {/* Settings Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-4">
+              {settingsItems.map((item) => {
+                const Icon = item.icon;
+                const isEnabled = settings[item.key];
+                return (
+                  <motion.div
+                    key={item.key}
+                    whileHover={{ scale: 1.01 }}
+                    className="bg-gray-900/60 border border-gray-700/40 rounded-2xl p-2 flex items-center justify-between transition-all duration-300"
                   >
-                    <motion.div
-                      animate={{ x: isEnabled ? 24 : 2 }}
-                      transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                      className="absolute top-1 w-6 h-6 bg-white rounded-full shadow-md"
-                    />
-                  </motion.button>
-                </motion.div>
-              );
-            })}
+                    <div className="flex items-center space-x-4">
+                      <div className={`w-12 h-12 bg-gradient-to-r ${colorClasses[item.color]} rounded-xl flex items-center justify-center`}>
+                        <Icon className="w-6 h-6 text-white" />
+                      </div>
+                      <div>
+                        <h4 className="text-white font-semibold text-lg">{item.label}</h4>
+                        <p className="text-sm text-gray-400">{item.description}</p>
+                      </div>
+                    </div>
+                    {/* Toggle Switch */}
+                    <motion.button
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => handleToggle(item.key)}
+                      className={`relative w-14 h-8 rounded-full transition duration-300 ${isEnabled ? `bg-gradient-to-r ${colorClasses[item.color]}` : 'bg-gray-600'
+                        }`}
+                    >
+                      <motion.div
+                        animate={{ x: isEnabled ? 24 : 2 }}
+                        transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                        className="absolute top-1 w-6 h-6 bg-white rounded-full shadow-md"
+                      />
+                    </motion.button>
+                  </motion.div>
+                );
+              })}
+            </div>
           </div>
-        </div>
-      </ShimmerWrapper>
+        </ShimmerWrapper>
+      </motion.div>
 
-      {/* Right side: AccountFeatures */}
-      <ShimmerWrapper
-        // loading={commentsLoading}
-        fallbackHeight={600}     // matches ~ h-80 zone
-        baseColor="#3b0764"
-        highlightColor="#c084fc"
-        duration={1400}
-        direction="rtl"
-        lockHeightWhileLoading
+      {/* Right side: AccountFeatures (slides in from RIGHT) */}
+      <motion.div
+        initial={{ opacity: 0, x: 80 }}
+        animate={{ opacity: 1, x: 0 }}
+        exit={{ opacity: 0, x: 80 }}
+        transition={{ duration: 0.5 }}
       >
-        <AccountFeatures userData={userData} />
-      </ShimmerWrapper>
+        <ShimmerWrapper
+          // loading={commentsLoading}
+          fallbackHeight={600}
+          baseColor="#3b0764"
+          highlightColor="#c084fc"
+          duration={1400}
+          direction="rtl"
+          lockHeightWhileLoading
+        >
+          <AccountFeatures userData={userData} />
+        </ShimmerWrapper>
+      </motion.div>
     </motion.div>
   );
 };

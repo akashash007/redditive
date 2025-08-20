@@ -3,9 +3,13 @@ import axios from "axios";
 import { motion } from 'framer-motion';
 import {
   ResponsiveContainer, BarChart, Bar, CartesianGrid,
-  XAxis, YAxis, Tooltip, PieChart, Pie, Cell, Treemap
+  XAxis, YAxis, Tooltip, PieChart, Pie, Cell, Treemap,
+  LineChart, Line, Legend,
+  RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar,
+  ScatterChart, Scatter, ZAxis,
+  AreaChart, Area
 } from 'recharts';
-import { TrendingUp, Award, MessageSquare } from 'lucide-react';
+import { TrendingUp, Award, MessageSquare, Clock, CalendarClock, Type, Timer } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import { useNotify } from '@/utils/NotificationContext';
 import CustomHeatmap from '../charts/CustomHeatmap';
@@ -82,7 +86,6 @@ const KarmaOverview = ({ userData }) => {
       cancelled = true;
       controller.abort();
     };
-    // only re-run when the *values* that matter change, not whole objects
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status, session?.user?.name, session?.accessToken]);
 
@@ -136,6 +139,109 @@ const KarmaOverview = ({ userData }) => {
     return Object.entries(counts).map(([date, count]) => ({ date, count }));
   }, [comments]);
 
+  // ===== NEW INSIGHTS =====
+
+  // 1) Best Posting Hours (avg upvotes & count by local hour 0..23)
+  const hourlyPerformance = useMemo(() => {
+    if (!comments?.length) return [];
+    const buckets = Array.from({ length: 24 }, () => ({ sum: 0, count: 0 }));
+    for (const c of comments) {
+      const d = new Date((c?.data?.created_utc ?? 0) * 1000);
+      const hour = d.getHours(); // local time
+      const ups = Number(c?.data?.ups ?? 0);
+      buckets[hour].sum += ups;
+      buckets[hour].count += 1;
+    }
+    return buckets.map((b, hour) => ({
+      hour,
+      count: b.count,
+      avgScore: b.count ? b.sum / b.count : 0,
+    }));
+  }, [comments]);
+
+  const bestHours = useMemo(() => {
+    const MIN = 3;
+    return [...hourlyPerformance]
+      .filter(d => d.count >= MIN)
+      .sort((a, b) => b.avgScore - a.avgScore)
+      .slice(0, 3);
+  }, [hourlyPerformance]);
+
+  const hourTick = (h) => {
+    const hr = Number(h) % 24;
+    const label = (hr % 12) || 12;
+    return `${label}${hr < 12 ? 'am' : 'pm'}`;
+  };
+
+  // 2) Best Days to Post (weekday avg upvotes + volume)
+  const DOW = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  const dayOfWeekPerf = useMemo(() => {
+    if (!comments?.length) return [];
+    const agg = Array.from({ length: 7 }, () => ({ sum: 0, count: 0 }));
+    for (const c of comments) {
+      const d = new Date((c?.data?.created_utc ?? 0) * 1000);
+      const w = d.getDay(); // 0..6
+      const ups = Number(c?.data?.ups ?? 0);
+      agg[w].sum += ups;
+      agg[w].count += 1;
+    }
+    return DOW.map((day, i) => ({
+      day,
+      avgScore: agg[i].count ? agg[i].sum / agg[i].count : 0,
+      count: agg[i].count,
+    }));
+  }, [comments]);
+
+  const topDow = useMemo(() => {
+    return [...dayOfWeekPerf]
+      .filter(d => d.count >= 3)
+      .sort((a, b) => b.avgScore - a.avgScore)
+      .slice(0, 2);
+  }, [dayOfWeekPerf]);
+
+  // 3) Comment Length vs Upvotes (scatter)
+  const lengthScatter = useMemo(() => {
+    if (!comments?.length) return [];
+    return comments.map(c => {
+      const text = String(c?.data?.body || '');
+      const words = text.trim() ? text.trim().split(/\s+/).length : 0;
+      return {
+        words: Math.min(words, 400), // clamp for readability
+        ups: Number(c?.data?.ups ?? 0),
+      };
+    });
+  }, [comments]);
+
+  // 4) Posting Cadence (histogram of intervals between comments)
+  const cadenceBins = [
+    { label: '<1h', min: 0, max: 1 },
+    { label: '1–3h', min: 1, max: 3 },
+    { label: '3–6h', min: 3, max: 6 },
+    { label: '6–12h', min: 6, max: 12 },
+    { label: '12–24h', min: 12, max: 24 },
+    { label: '1–2d', min: 24, max: 48 },
+    { label: '2–4d', min: 48, max: 96 },
+    { label: '>4d', min: 96, max: Infinity },
+  ];
+
+  const postingCadence = useMemo(() => {
+    if (!comments?.length) return [];
+    const times = comments
+      .map(c => Number(c?.data?.created_utc ?? 0))
+      .filter(Boolean)
+      .sort((a, b) => a - b);
+    const diffsHours = [];
+    for (let i = 1; i < times.length; i++) {
+      diffsHours.push((times[i] - times[i - 1]) / 3600);
+    }
+    const counts = cadenceBins.map(b => ({ label: b.label, count: 0 }));
+    diffsHours.forEach(h => {
+      const idx = cadenceBins.findIndex(b => h >= b.min && h < b.max);
+      if (idx > -1) counts[idx].count += 1;
+    });
+    return counts;
+  }, [comments]);
+
   const karmaColors = ['#8B5CF6', '#06B6D4', '#F59E0B', '#EF4444', '#10B981', '#3B82F6', '#E879F9', '#F97316'];
   const CustomizedContent = ({ x, y, width, height, name, index }) => {
     const color = karmaColors[index % karmaColors.length];
@@ -174,7 +280,6 @@ const KarmaOverview = ({ userData }) => {
       {/* ===== Left: Karma Overview (static – do NOT tie to commentsLoading) ===== */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <ShimmerWrapper
-          // leave this uncontrolled or enter-once if you want a tiny intro shimmer
           fallbackHeight={550}
           baseColor="#3b0764"
           highlightColor="#c084fc"
@@ -254,18 +359,259 @@ const KarmaOverview = ({ userData }) => {
             </div>
           </div>
         </ShimmerWrapper>
+        <div className="">
+          {/* ===== Right: Votes (depends on comments) ===== */}
+          <ShimmerWrapper
+            loading={commentsLoading}
+            fallbackHeight={120}
+            baseColor="#3b0764"
+            highlightColor="#c084fc"
+            duration={1400}
+            direction="rtl"
+            lockHeightWhileLoading
+          >
+            <VotesChart topComment={topComment} bottomComment={bottomComment} />
+          </ShimmerWrapper>
 
-        {/* ===== Right: Votes (depends on comments) ===== */}
+          {/* ==== Best Posting Hours (new) ==== */}
+          <ShimmerWrapper
+            loading={commentsLoading}
+            fallbackHeight={422}
+            baseColor="#3b0764"
+            highlightColor="#c084fc"
+            duration={1400}
+            direction="rtl"
+            lockHeightWhileLoading
+            className={`${commentsLoading && "mt-8"}`}
+          >
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl md:p-6 p-3 shadow-2xl mt-8 md:mt-4"
+            >
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h4 className="text-lg font-semibold text-white flex items-center">
+                    <Clock className="w-5 h-5 mr-2 text-blue-400" />
+                    Best Posting Hours
+                  </h4>
+                  <p className="text-gray-300 text-sm">Average upvotes by hour (local time) + your activity</p>
+                </div>
+              </div>
+
+              {bestHours?.length > 0 && (
+                <div className="flex flex-wrap gap-2 mb-3">
+                  {bestHours.map(({ hour, avgScore, count }) => (
+                    <span
+                      key={hour}
+                      className="text-xs md:text-sm px-2 py-1 rounded-full bg-purple-900/40 border border-white/10 text-white"
+                      title={`Samples: ${count}`}
+                    >
+                      {hourTick(hour)} • avg {avgScore.toFixed(1)} • {count} comments
+                    </span>
+                  ))}
+                </div>
+              )}
+
+              <div className="h-56">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={hourlyPerformance} margin={{ top: 8, right: 16, left: 0, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                    <XAxis
+                      dataKey="hour"
+                      tickFormatter={hourTick}
+                      tick={{ fill: '#9CA3AF' }}
+                    />
+                    <YAxis
+                      yAxisId="left"
+                      tick={{ fill: '#9CA3AF' }}
+                      domain={['auto', 'auto']}
+                    />
+                    <YAxis
+                      yAxisId="right"
+                      orientation="right"
+                      tick={{ fill: '#9CA3AF' }}
+                      domain={[0, (dataMax) => Math.max(2, dataMax)]}
+                    />
+                    <Tooltip
+                      formatter={(val, key) => {
+                        if (key === 'avgScore') return [Number(val).toFixed(2), 'Avg upvotes'];
+                        if (key === 'count') return [val, 'Comments'];
+                        return [val, key];
+                      }}
+                      labelFormatter={(h) => `Hour: ${hourTick(h)}`}
+                      contentStyle={{
+                        backgroundColor: '#1F2937',
+                        border: '1px solid #4B5563',
+                        borderRadius: '0.5rem',
+                        padding: '0.75rem',
+                        color: 'white',
+                      }}
+                      cursor={{ stroke: '#8B5CF6', strokeDasharray: '4 4' }}
+                    />
+                    <Legend wrapperStyle={{ color: 'white' }} />
+                    <Line
+                      type="monotone"
+                      dataKey="avgScore"
+                      name="Avg upvotes"
+                      yAxisId="left"
+                      stroke="#10B981"
+                      strokeWidth={2}
+                      dot={false}
+                      activeDot={{ r: 5 }}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="count"
+                      name="Comments"
+                      yAxisId="right"
+                      stroke="#8B5CF6"
+                      strokeWidth={2}
+                      dot={false}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </motion.div>
+          </ShimmerWrapper>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-[8px]">
         <ShimmerWrapper
           loading={commentsLoading}
-          fallbackHeight={120}
+          fallbackHeight={422}
           baseColor="#3b0764"
           highlightColor="#c084fc"
           duration={1400}
           direction="rtl"
           lockHeightWhileLoading
+          className={`${commentsLoading && "mt-8"} mb-8`}
         >
-          <VotesChart topComment={topComment} bottomComment={bottomComment} />
+          {/* ==== Day-of-Week Performance (new) ==== */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.12 }}
+            className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl md:p-6 p-3 shadow-2xl mt-8"
+          >
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h4 className="text-lg font-semibold text-white flex items-center">
+                  <CalendarClock className="w-5 h-5 mr-2 text-blue-400" />
+                  Best Days to Post
+                </h4>
+                <p className="text-gray-300 text-sm">Average upvotes by weekday (plus your volume)</p>
+              </div>
+            </div>
+
+            {topDow?.length > 0 && (
+              <div className="flex flex-wrap gap-2 mb-3">
+                {topDow.map(({ day, avgScore, count }) => (
+                  <span
+                    key={day}
+                    className="text-xs md:text-sm px-2 py-1 rounded-full bg-purple-900/40 border border-white/10 text-white"
+                    title={`Samples: ${count}`}
+                  >
+                    {day} • avg {avgScore.toFixed(1)} • {count} comments
+                  </span>
+                ))}
+              </div>
+            )}
+
+            <div className="h-56">
+              <ResponsiveContainer width="100%" height="100%">
+                <RadarChart data={dayOfWeekPerf}>
+                  <PolarGrid stroke="#374151" />
+                  <PolarAngleAxis dataKey="day" tick={{ fill: '#9CA3AF' }} />
+                  <PolarRadiusAxis tick={{ fill: '#9CA3AF' }} />
+                  <Tooltip
+                    formatter={(val, key) => {
+                      if (key === 'avgScore') return [Number(val).toFixed(2), 'Avg upvotes'];
+                      if (key === 'count') return [val, 'Comments'];
+                      return [val, key];
+                    }}
+                    contentStyle={{
+                      backgroundColor: '#1F2937',
+                      border: '1px solid #4B5563',
+                      borderRadius: '0.5rem',
+                      padding: '0.75rem',
+                      color: 'white',
+                    }}
+                  />
+                  <Radar
+                    dataKey="avgScore"
+                    name="Avg upvotes"
+                    stroke="#10B981"
+                    fill="#10B981"
+                    fillOpacity={0.35}
+                  />
+                </RadarChart>
+              </ResponsiveContainer>
+            </div>
+          </motion.div>
+        </ShimmerWrapper>
+
+        <ShimmerWrapper
+          loading={commentsLoading}
+          fallbackHeight={422}
+          baseColor="#3b0764"
+          highlightColor="#c084fc"
+          duration={1400}
+          direction="rtl"
+          lockHeightWhileLoading
+          className={`${commentsLoading && "mt-0 md:mt-8"}`}
+        >
+          {/* ==== Comment Length vs Upvotes (new) ==== */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.14 }}
+            className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl md:p-6 p-3 shadow-2xl mt-0 md:mt-8"
+          >
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h4 className="text-lg font-semibold text-white flex items-center">
+                  <Type className="w-5 h-5 mr-2 text-blue-400" />
+                  Length vs Upvotes
+                </h4>
+                <p className="text-gray-300 text-sm">Do longer comments perform better?</p>
+              </div>
+            </div>
+
+            <div className="h-56">
+              <ResponsiveContainer width="100%" height="100%">
+                <ScatterChart margin={{ top: 8, right: 16, left: 0, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                  <XAxis
+                    dataKey="words"
+                    name="Words"
+                    tick={{ fill: '#9CA3AF' }}
+                    tickCount={8}
+                  />
+                  <YAxis
+                    dataKey="ups"
+                    name="Upvotes"
+                    tick={{ fill: '#9CA3AF' }}
+                  />
+                  <ZAxis type="number" range={[60, 60]} />
+                  <Tooltip
+                    cursor={{ stroke: '#8B5CF6', strokeDasharray: '4 4' }}
+                    contentStyle={{
+                      backgroundColor: '#1F2937',
+                      border: '1px solid #4B5563',
+                      borderRadius: '0.5rem',
+                      padding: '0.75rem',
+                      color: 'white',
+                    }}
+                    formatter={(val, key) => [val, key === 'words' ? 'Words' : 'Upvotes']}
+                  />
+                  <Scatter data={lengthScatter} name="Comments" fill="#3B82F6" />
+                </ScatterChart>
+              </ResponsiveContainer>
+            </div>
+          </motion.div>
         </ShimmerWrapper>
       </div>
 
@@ -278,7 +624,7 @@ const KarmaOverview = ({ userData }) => {
         duration={1400}
         direction="rtl"
         lockHeightWhileLoading
-        className={`${commentsLoading && "mt-8"}`}
+        className={`${commentsLoading && "mt-0"}`}
       >
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -297,25 +643,6 @@ const KarmaOverview = ({ userData }) => {
           </div>
 
           <div className="h-64">
-            {/* <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={subredditActivity}>
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: '#1F2937',
-                    border: '1px solid #4B5563',
-                    borderRadius: '0.5rem',
-                    padding: '0.75rem',
-                    color: 'white',
-                  }}
-                  cursor={{ fill: '#8B5CF622' }}
-                />
-                <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                <XAxis dataKey="subreddit" tick={{ fill: '#9CA3AF' }} />
-                <YAxis tick={{ fill: '#9CA3AF' }} />
-                <Bar dataKey="count" fill="#8B5CF6" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer> */}
-            {/* Subreddit Comment Distribution */}
             <div className="-mx-4 md:mx-0 md:overflow-x-visible overflow-x-auto pb-2">
               <div className="min-w-[960px] md:min-w-0 px-4 md:px-0">
                 <div className="h-64">
@@ -372,42 +699,6 @@ const KarmaOverview = ({ userData }) => {
             </motion.div>
           </div>
 
-          {/* <div className="h-80">
-            <ResponsiveContainer width="100%" height="100%">
-              <svg style={{ height: 0 }}>
-                <defs>
-                  <filter id="glass-blur" x="0" y="0">
-                    <feGaussianBlur stdDeviation="4" result="blur" />
-                    <feComponentTransfer><feFuncA type="linear" slope="0.3" /></feComponentTransfer>
-                    <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
-                  </filter>
-                </defs>
-              </svg>
-
-              <Treemap
-                data={treemapData}
-                dataKey="size"
-                aspectRatio={4 / 3}
-                stroke="#fff"
-                fill="#8B5CF6"
-                content={<CustomizedContent />}
-                type="treemap"
-                layout="squarify"
-              >
-                <Tooltip
-                  formatter={(value) => [`${Math.round(Math.exp(value) - 1)} karma`]}
-                  labelFormatter={() => ''}
-                  contentStyle={{
-                    backgroundColor: '#1F2937',
-                    border: '1px solid #4B5563',
-                    borderRadius: '0.5rem',
-                    padding: '0.5rem',
-                    color: 'white',
-                  }}
-                />
-              </Treemap>
-            </ResponsiveContainer>
-          </div> */}
           <div className="-mx-4 md:mx-0 md:overflow-x-visible overflow-x-auto pb-2">
             <div className="min-w-[1024px] md:min-w-0 px-4 md:px-0">
               <div className="h-80">
@@ -453,7 +744,6 @@ const KarmaOverview = ({ userData }) => {
       </ShimmerWrapper>
 
       {/* ===== Activity Heatmap (depends on comments) ===== */}
-
       <ShimmerWrapper
         loading={commentsLoading}
         fallbackHeight={260}
@@ -465,18 +755,13 @@ const KarmaOverview = ({ userData }) => {
         className={`${commentsLoading && "mt-8"}`}
       >
         <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-4 md:p-8 shadow-2xl mt-8">
-          {/* <CustomHeatmap data={heatmapData} /> */}
-          {/* Activity Heatmap */}
           <div className="-mx-4 md:mx-0 md:overflow-x-visible overflow-x-auto">
             <div className="min-w-[1024px] md:min-w-0 px-4 md:px-0">
-              {/* If your heatmap needs a fixed height, keep it;
-        otherwise you can omit the height wrapper */}
               <div className="h-[260px] md:h-[240px]">
                 <CustomHeatmap data={heatmapData} />
               </div>
             </div>
           </div>
-
         </div>
       </ShimmerWrapper>
     </motion.div>
