@@ -331,14 +331,15 @@ export default function Index() {
                                 >
                                     Unlock the power of your Reddit presence with{' '}
                                     <span className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent font-semibold">
-                                        AI-driven analytics
+                                        advanced analytics
                                     </span>
                                     , beautiful visualizations, and{' '}
                                     <span className="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent font-semibold">
-                                        real-time insights
+                                        custom-built insights
                                     </span>
                                     .
                                 </motion.p>
+
 
                                 {/* CTA Buttons */}
                                 <motion.div
