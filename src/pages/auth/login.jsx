@@ -72,12 +72,16 @@ export default function Login() {
                 {/* <div className="text-gray-500 my-6 text-sm">Or continue with</div> */}
 
                 {/* Terms */}
-                <p className="text-xs text-gray-500 mt-8">
+                <p className="text-xs text-gray-500 mt-8 mb-4">
                     By connecting, you agree to our{" "}
                     <Link href="/terms" className="underline hover:text-white">Terms of Service</Link>{" "}
                     and{" "}
                     <Link href="/privacy" className="underline hover:text-white">Privacy Policy</Link>.
                 </p>
+
+                <Link href="/" className="text-[11px] md:text-xs text-gray-300 underline hover:text-white pt-5">
+                    Back
+                </Link>
             </motion.div>
         </main>
     );

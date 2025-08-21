@@ -2,6 +2,7 @@ import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { LogOut } from "lucide-react";
 import { useEffect } from "react";
+import Image from "next/image";
 
 export default function ConfirmLogoutModal({ isOpen, onClose, onConfirm }) {
     if (typeof window === "undefined") return null;
@@ -21,7 +22,7 @@ export default function ConfirmLogoutModal({ isOpen, onClose, onConfirm }) {
         <AnimatePresence>
             {isOpen && (
                 <motion.div
-                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-md"
+                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-md px-2 md:px-0"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
@@ -36,8 +37,19 @@ export default function ConfirmLogoutModal({ isOpen, onClose, onConfirm }) {
                     >
 
                         <div className="flex flex-col items-center text-center">
-                            <LogOut className="w-8 h-8 text-red-500 mb-3" />
+                            {/* <LogOut className="w-8 h-8 text-red-500 mb-3" /> */}
+                            {/* Logo */}
+                            <div className="relative flex justify-center mb-6">
 
+                                {/* Logo Image */}
+                                <Image
+                                    src="/redditive_favicon.png"
+                                    alt="Reddit Analyzer Logo"
+                                    width={60}
+                                    height={60}
+                                    className="rounded-full relative z-10"
+                                />
+                            </div>
                             <h2 className="text-xl font-semibold mb-1">Log Out?</h2>
                             <p className="text-sm text-gray-300 mb-6">Are you sure you want to log out?</p>
 

@@ -107,7 +107,7 @@ export function AccordionItem({ question, answer, defaultOpen = false }) {
 // FAQ Section
 const FAQSection = () => {
     return (
-        <section className="relative z-10 mx-auto max-w-3xl px-6 py-20">
+        <section className="relative z-10 mx-auto max-w-3xl px-3 md:px-6 py-20">
             {/* Title + floaty badges */}
             <div className="mb-10 flex items-center justify-center gap-3">
                 <motion.h2

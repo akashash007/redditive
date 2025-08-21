@@ -40,7 +40,7 @@ export default function SlimAboutBanner({
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.2 }}
             transition={{ type: "spring", stiffness: 300, damping: 26 }}
-            className="relative mx-auto mt-10 w-full max-w-5xl mb-15"
+            className="relative mx-auto mt-10 w-full max-w-5xl mb-15  px-3 md:px-0"
         >
             {/* subtle glow blobs */}
             <motion.div variants={float} animate="animate" className="pointer-events-none absolute -top-6 -left-8 h-24 w-24 rounded-full bg-purple-500/20 blur-2xl" />

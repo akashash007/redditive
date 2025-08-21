@@ -67,7 +67,7 @@ export default function About() {
                     with deep insights.
                 </motion.p>
 
-                <motion.div
+                {/* <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: 0.3 }}
@@ -80,7 +80,7 @@ export default function About() {
                     >
                         <Github className="w-5 h-5" /> GitHub
                     </Link>
-                </motion.div>
+                </motion.div> */}
 
                 <Link
                     href="https://buymeacoffee.com/ash_1913"
