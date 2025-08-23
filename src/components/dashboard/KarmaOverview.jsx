@@ -4,17 +4,29 @@ import { motion } from 'framer-motion';
 import {
   ResponsiveContainer, BarChart, Bar, CartesianGrid,
   XAxis, YAxis, Tooltip, PieChart, Pie, Cell, Treemap,
-  LineChart, Line, Legend,
-  RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar,
-  ScatterChart, Scatter, ZAxis,
-  AreaChart, Area
+  LineChart, Line, Legend, ComposedChart,
+  RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar
 } from 'recharts';
-import { TrendingUp, Award, MessageSquare, Clock, CalendarClock, Type, Timer } from 'lucide-react';
+import { TrendingUp, Award, MessageSquare, Clock, CalendarClock, Type } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import { useNotify } from '@/utils/NotificationContext';
 import CustomHeatmap from '../charts/CustomHeatmap';
 import VotesChart from '../charts/VotesChart';
 import ShimmerWrapper from '../ui/ShimmerWrapper';
+
+// ===== Shared hover (tooltip + cursor) styles to keep everything uniform (match "Best Posting Hours") =====
+const HOVER_TOOLTIP_STYLE = {
+  backgroundColor: '#1F2937',          // gray-800
+  border: '1px solid #4B5563',         // gray-600
+  borderRadius: '0.5rem',
+  padding: '0.75rem',
+  color: 'white',
+};
+// Dashed cursor line/rectangle for Cartesian charts
+const HOVER_CURSOR = { stroke: '#8B5CF6', strokeDasharray: '4 4' };
+// Helper presets
+const tooltipCartesian = { contentStyle: HOVER_TOOLTIP_STYLE, cursor: HOVER_CURSOR }; // Line/Bar/Composed
+const tooltipPolar = { contentStyle: HOVER_TOOLTIP_STYLE };                        // Pie/Radar/Treemap
 
 const KarmaOverview = ({ userData }) => {
   if (!userData) return null;
@@ -199,18 +211,34 @@ const KarmaOverview = ({ userData }) => {
       .slice(0, 2);
   }, [dayOfWeekPerf]);
 
-  // 3) Comment Length vs Upvotes (scatter)
-  const lengthScatter = useMemo(() => {
+  // 3) NEW: Content Type Performance (Text vs Link vs Image)
+  const contentTypePerf = useMemo(() => {
     if (!comments?.length) return [];
-    return comments.map(c => {
-      const text = String(c?.data?.body || '');
-      const words = text.trim() ? text.trim().split(/\s+/).length : 0;
-      return {
-        words: Math.min(words, 400), // clamp for readability
-        ups: Number(c?.data?.ups ?? 0),
-      };
-    });
+    const classify = (c) => {
+      const d = c?.data || {};
+      if (d.media_metadata && Object.keys(d.media_metadata).length > 0) return 'Image';
+      const body = String(d.body || '');
+      if (/https?:\/\/\S+/i.test(body)) return 'Link';
+      return 'Text';
+    };
+    const agg = { Text: { sum: 0, count: 0 }, Link: { sum: 0, count: 0 }, Image: { sum: 0, count: 0 } };
+    for (const c of comments) {
+      const t = classify(c);
+      const ups = Number(c?.data?.ups ?? 0);
+      agg[t].sum += ups;
+      agg[t].count += 1;
+    }
+    return Object.entries(agg)
+      .filter(([, v]) => v.count > 0)
+      .map(([type, v]) => ({
+        type,
+        avgScore: v.count ? v.sum / v.count : 0,
+        count: v.count
+      }))
+      .sort((a, b) => b.avgScore - a.avgScore);
   }, [comments]);
+
+  const topTypes = useMemo(() => contentTypePerf.slice(0, 2), [contentTypePerf]);
 
   // 4) Posting Cadence (histogram of intervals between comments)
   const cadenceBins = [
@@ -270,6 +298,24 @@ const KarmaOverview = ({ userData }) => {
     );
   };
 
+  const WhitePieTooltip = ({ active, payload }) => {
+    if (!active || !payload?.length) return null;
+    const p = payload[0];
+    return (
+      <div style={{
+        background: '#1F2937',
+        border: '1px solid #4B5563',
+        borderRadius: '0.5rem',
+        padding: '0.75rem',
+        color: '#fff',
+      }}>
+        <div style={{ color: '#fff', fontWeight: 600 }}>{p?.name}</div>
+        <div style={{ color: '#fff' }}>{p?.value}</div>
+      </div>
+    );
+  };
+
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 30 }}
@@ -313,14 +359,16 @@ const KarmaOverview = ({ userData }) => {
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                       <Tooltip
+                        // force white text in all parts of the tooltip
                         contentStyle={{
-                          backgroundColor: '#4E3567',
+                          backgroundColor: '#1F2937',
                           border: '1px solid #4B5563',
                           borderRadius: '0.5rem',
                           padding: '0.75rem',
-                          color: 'white',
+                          color: '#fff',
                         }}
-                        cursor={{ fill: '#8B5CF622' }}
+                        itemStyle={{ color: '#fff' }}
+                        labelStyle={{ color: '#fff' }}
                       />
                       <Pie
                         data={karmaDistribution}
@@ -338,6 +386,7 @@ const KarmaOverview = ({ userData }) => {
                     </PieChart>
                   </ResponsiveContainer>
                 </div>
+
 
                 <div className="grid grid-cols-2 gap-2 mt-4">
                   {karmaDistribution.map((item, i) => (
@@ -370,6 +419,7 @@ const KarmaOverview = ({ userData }) => {
             direction="rtl"
             lockHeightWhileLoading
           >
+            {/* If VotesChart uses Recharts, open VotesChart.jsx and give its <Tooltip /> the same presets */}
             <VotesChart topComment={topComment} bottomComment={bottomComment} />
           </ShimmerWrapper>
 
@@ -435,20 +485,13 @@ const KarmaOverview = ({ userData }) => {
                       domain={[0, (dataMax) => Math.max(2, dataMax)]}
                     />
                     <Tooltip
+                      {...tooltipCartesian}
                       formatter={(val, key) => {
                         if (key === 'avgScore') return [Number(val).toFixed(2), 'Avg upvotes'];
                         if (key === 'count') return [val, 'Comments'];
                         return [val, key];
                       }}
                       labelFormatter={(h) => `Hour: ${hourTick(h)}`}
-                      contentStyle={{
-                        backgroundColor: '#1F2937',
-                        border: '1px solid #4B5563',
-                        borderRadius: '0.5rem',
-                        padding: '0.75rem',
-                        color: 'white',
-                      }}
-                      cursor={{ stroke: '#8B5CF6', strokeDasharray: '4 4' }}
                     />
                     <Legend wrapperStyle={{ color: 'white' }} />
                     <Line
@@ -527,17 +570,11 @@ const KarmaOverview = ({ userData }) => {
                   <PolarAngleAxis dataKey="day" tick={{ fill: '#9CA3AF' }} />
                   <PolarRadiusAxis tick={{ fill: '#9CA3AF' }} />
                   <Tooltip
+                    {...tooltipPolar}
                     formatter={(val, key) => {
                       if (key === 'avgScore') return [Number(val).toFixed(2), 'Avg upvotes'];
                       if (key === 'count') return [val, 'Comments'];
                       return [val, key];
-                    }}
-                    contentStyle={{
-                      backgroundColor: '#1F2937',
-                      border: '1px solid #4B5563',
-                      borderRadius: '0.5rem',
-                      padding: '0.75rem',
-                      color: 'white',
                     }}
                   />
                   <Radar
@@ -563,7 +600,7 @@ const KarmaOverview = ({ userData }) => {
           lockHeightWhileLoading
           className={`${commentsLoading && "mt-0 md:mt-8"}`}
         >
-          {/* ==== Comment Length vs Upvotes (new) ==== */}
+          {/* ==== Content Type Performance (replaces "Length vs Upvotes") ==== */}
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -574,41 +611,69 @@ const KarmaOverview = ({ userData }) => {
               <div>
                 <h4 className="text-lg font-semibold text-white flex items-center">
                   <Type className="w-5 h-5 mr-2 text-blue-400" />
-                  Length vs Upvotes
+                  What gets more upvotes?
                 </h4>
-                <p className="text-gray-300 text-sm">Do longer comments perform better?</p>
+                <p className="text-gray-300 text-sm">Average upvotes by comment type, plus your volume</p>
               </div>
             </div>
 
+            {topTypes?.length > 0 && (
+              <div className="flex flex-wrap gap-2 mb-3">
+                {topTypes.map(({ type, avgScore, count }) => (
+                  <span
+                    key={type}
+                    className="text-xs md:text-sm px-2 py-1 rounded-full bg-purple-900/40 border border-white/10 text-white"
+                    title={`Samples: ${count}`}
+                  >
+                    {type}: avg {avgScore.toFixed(1)} • {count} comments
+                  </span>
+                ))}
+              </div>
+            )}
+
             <div className="h-56">
               <ResponsiveContainer width="100%" height="100%">
-                <ScatterChart margin={{ top: 8, right: 16, left: 0, bottom: 0 }}>
+                <ComposedChart data={contentTypePerf} margin={{ top: 8, right: 16, left: 0, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                  <XAxis
-                    dataKey="words"
-                    name="Words"
+                  <XAxis dataKey="type" tick={{ fill: '#9CA3AF' }} />
+                  <YAxis
+                    yAxisId="left"
                     tick={{ fill: '#9CA3AF' }}
-                    tickCount={8}
+                    domain={['auto', 'auto']}
                   />
                   <YAxis
-                    dataKey="ups"
-                    name="Upvotes"
+                    yAxisId="right"
+                    orientation="right"
                     tick={{ fill: '#9CA3AF' }}
+                    domain={[0, (dataMax) => Math.max(2, dataMax)]}
                   />
-                  <ZAxis type="number" range={[60, 60]} />
                   <Tooltip
-                    cursor={{ stroke: '#8B5CF6', strokeDasharray: '4 4' }}
-                    contentStyle={{
-                      backgroundColor: '#1F2937',
-                      border: '1px solid #4B5563',
-                      borderRadius: '0.5rem',
-                      padding: '0.75rem',
-                      color: 'white',
+                    {...tooltipCartesian}
+                    formatter={(val, key) => {
+                      if (key === 'avgScore') return [Number(val).toFixed(2), 'Avg upvotes'];
+                      if (key === 'count') return [val, 'Comments'];
+                      return [val, key];
                     }}
-                    formatter={(val, key) => [val, key === 'words' ? 'Words' : 'Upvotes']}
                   />
-                  <Scatter data={lengthScatter} name="Comments" fill="#3B82F6" />
-                </ScatterChart>
+                  <Legend wrapperStyle={{ color: 'white' }} />
+                  <Bar
+                    yAxisId="left"
+                    dataKey="avgScore"
+                    name="Avg upvotes"
+                    fill="#10B981"
+                    radius={[4, 4, 0, 0]}
+                  />
+                  <Line
+                    yAxisId="right"
+                    type="monotone"
+                    dataKey="count"
+                    name="Comments"
+                    stroke="#8B5CF6"
+                    strokeWidth={2}
+                    dot={false}
+                    activeDot={{ r: 5 }}
+                  />
+                </ComposedChart>
               </ResponsiveContainer>
             </div>
           </motion.div>
@@ -648,16 +713,7 @@ const KarmaOverview = ({ userData }) => {
                 <div className="h-64">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={subredditActivity}>
-                      <Tooltip
-                        contentStyle={{
-                          backgroundColor: '#1F2937',
-                          border: '1px solid #4B5563',
-                          borderRadius: '0.5rem',
-                          padding: '0.75rem',
-                          color: 'white',
-                        }}
-                        cursor={{ fill: '#8B5CF622' }}
-                      />
+                      <Tooltip {...tooltipCartesian} />
                       <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
                       <XAxis dataKey="subreddit" tick={{ fill: '#9CA3AF' }} />
                       <YAxis tick={{ fill: '#9CA3AF' }} />
@@ -724,15 +780,9 @@ const KarmaOverview = ({ userData }) => {
                     layout="squarify"
                   >
                     <Tooltip
+                      {...tooltipPolar}
                       formatter={(value) => [`${Math.round(Math.exp(value) - 1)} karma`]}
                       labelFormatter={() => ''}
-                      contentStyle={{
-                        backgroundColor: '#1F2937',
-                        border: '1px solid #4B5563',
-                        borderRadius: '0.5rem',
-                        padding: '0.5rem',
-                        color: 'white',
-                      }}
                     />
                   </Treemap>
                 </ResponsiveContainer>

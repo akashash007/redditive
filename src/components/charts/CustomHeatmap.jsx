@@ -140,7 +140,7 @@ export default function CustomHeatmap({ data }) {
                 </div>
             </div>
 
-            <div className="flex gap-1">
+            <div className="flex gap-1 justify-center">
                 {/* Day Labels */}
                 <div className="grid grid-rows-7 gap-[2px] mt-5 mr-1 text-xs text-gray-400">
                     {dayLabels.map((day) => (

@@ -1,6 +1,6 @@
 // components/UserDropdown.jsx
 import { useState, useRef, useEffect, useCallback } from "react";
-import { Award, LogOut, PenSquare, Settings, Upload, Info } from "lucide-react";
+import { Award, LogOut, PenSquare, Settings, Upload, Info, Newspaper } from "lucide-react";
 import { signOut } from "next-auth/react";
 import ROUTES from "@/config/routeConfig";
 import ConfirmLogoutModal from "./ui/ConfirmLogoutModal";
@@ -88,7 +88,7 @@ const UserDropdown = ({ profile, session, setActiveTab }) => {
                                 ? "bg-gradient-to-r from-purple-600/30 via-pink-600/30 to-purple-600/30 text-white"
                                 : ""}`}
                     >
-                        <PenSquare className="w-4 h-4 mr-2" />
+                        <Newspaper className="w-4 h-4 mr-2" />
                         Posts
                     </button>
 
